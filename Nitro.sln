@@ -1,0 +1,55 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Web", "Nitro.Web\Nitro.Web.csproj", "{1700C779-BE8C-4119-A6B4-1F760E3DC7FA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Core", "Nitro.Core\Nitro.Core.csproj", "{EA71F453-EE88-403B-A590-8A9148B803CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Infrastructure", "Nitro.Infrastructure\Nitro.Infrastructure.csproj", "{0A7A280F-BC02-4434-BB5A-F11B01CA9ACD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Kernel", "Nitro.Kernel\Nitro.Kernel.csproj", "{8FFA88D6-896E-4D51-AFE0-669F22C24CD9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Service", "Nitro.Service\Nitro.Service.csproj", "{8EA9B795-2221-459D-862E-81D294442CDC}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Migrations", "Nitro.Migration\Nitro.Migrations.csproj", "{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1700C779-BE8C-4119-A6B4-1F760E3DC7FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1700C779-BE8C-4119-A6B4-1F760E3DC7FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1700C779-BE8C-4119-A6B4-1F760E3DC7FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1700C779-BE8C-4119-A6B4-1F760E3DC7FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA71F453-EE88-403B-A590-8A9148B803CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA71F453-EE88-403B-A590-8A9148B803CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA71F453-EE88-403B-A590-8A9148B803CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA71F453-EE88-403B-A590-8A9148B803CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A7A280F-BC02-4434-BB5A-F11B01CA9ACD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A7A280F-BC02-4434-BB5A-F11B01CA9ACD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A7A280F-BC02-4434-BB5A-F11B01CA9ACD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A7A280F-BC02-4434-BB5A-F11B01CA9ACD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FFA88D6-896E-4D51-AFE0-669F22C24CD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FFA88D6-896E-4D51-AFE0-669F22C24CD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FFA88D6-896E-4D51-AFE0-669F22C24CD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FFA88D6-896E-4D51-AFE0-669F22C24CD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8EA9B795-2221-459D-862E-81D294442CDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8EA9B795-2221-459D-862E-81D294442CDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8EA9B795-2221-459D-862E-81D294442CDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8EA9B795-2221-459D-862E-81D294442CDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0ED21E7C-0630-47C3-AEFE-75B5D3A2EAA3}
+	EndGlobalSection
+EndGlobal
