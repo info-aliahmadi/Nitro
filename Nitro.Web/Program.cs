@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Nitro.Core.Data;
-using Nitro.Infrastructure.Data.IdentityDomain;
+using Nitro.Core.Domain.Auth;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,10 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nitro.Infrastructure.Data.IdentityDomain;
+using Nitro.Core.Domain.Auth;
 
-namespace Nitro.Infrastructure.Data.IdentityEntityTypeConfigs
+
+namespace Nitro.Core.Mapping.Auth
 {
-    public class RoleClaimConfiguration : IEntityTypeConfiguration<RoleClaim>
+    public class RoleClaimBuilder : IEntityTypeConfiguration<RoleClaim>
     {
         public void Configure(EntityTypeBuilder<RoleClaim> builder)
         {

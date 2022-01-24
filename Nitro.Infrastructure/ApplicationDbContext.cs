@@ -1,16 +1,16 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
 using Nitro.Core.Data.Domain;
-using Nitro.Core.Data.EntityTypeConfigs;
+using Nitro.Core.Data.EntityConfig.Cms;
+using Nitro.Core.Data.Mapping.Cms;
 using Nitro.Infrastructure;
-using Nitro.Infrastructure.Data.IdentityDomain;
 
 namespace Nitro.Core.Data
 {
     /// <summary>
     /// 
     /// </summary>
-    public class ApplicationDbContext : InfraDbContext
+    public class ApplicationDbContext : IdentityContext
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -19,14 +19,26 @@ namespace Nitro.Core.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.ApplyConfiguration(new AuthorConfiguration());
-            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
-            modelBuilder.ApplyConfiguration(new ContentConfiguration());
+
+            #region Cms Builder
+
+            modelBuilder.ApplyConfiguration(new AuthorBuilder());
+            modelBuilder.ApplyConfiguration(new CategoryBuilder());
+            modelBuilder.ApplyConfiguration(new ContentBuilder());
+
+            #endregion
+
 
         }
+
+
+        #region Cms DbSet
+
         public DbSet<Author> Author { get; set; }
         public DbSet<Category> Category { get; set; }
         public DbSet<Content> Content { get; set; }
+
+        #endregion
 
     }
 }

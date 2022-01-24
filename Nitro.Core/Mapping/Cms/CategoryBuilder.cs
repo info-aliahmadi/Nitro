@@ -3,11 +3,11 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Nitro.Core.Data.Domain;
 
 
-namespace Nitro.Core.Data.EntityTypeConfigs
+namespace Nitro.Core.Data.EntityConfig.Cms
 {
-    public class ContentConfiguration : IEntityTypeConfiguration<Content>
+    public class CategoryBuilder : IEntityTypeConfiguration<Category>
     {
-        public void Configure(EntityTypeBuilder<Content> builder)
+        public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasKey(o => o.Id);
         }

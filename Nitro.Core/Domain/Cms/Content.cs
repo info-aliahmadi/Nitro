@@ -1,4 +1,4 @@
-﻿using Nitro.Infrastructure.Data;
+﻿using Nitro.Kernel;
 
 namespace Nitro.Core.Data.Domain
 {

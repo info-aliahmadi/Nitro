@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Nitro.Infrastructure.Data.IdentityDomain;
+using Nitro.Core.Domain.Auth;
 
-namespace Nitro.Infrastructure.Data.IdentityEntityTypeConfigs
+namespace Nitro.Core.Mapping.Auth
 {
-    public class UserLoginConfiguration : IEntityTypeConfiguration<UserLogin>
+    public class UserLoginBuilder : IEntityTypeConfiguration<UserLogin>
     {
         public void Configure(EntityTypeBuilder<UserLogin> builder)
         {

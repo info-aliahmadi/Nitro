@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Nitro.Infrastructure.Data
+namespace Nitro.Kernel
 {
     /// <summary>
     /// Represents the base class for entities
