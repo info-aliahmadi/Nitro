@@ -20,8 +20,11 @@ namespace Nitro.Infrastructure.Configuration
         public static void ConfigureApplicationServices(this IServiceCollection services,
             WebApplicationBuilder builder)
         {
+            builder.AddSerilogConfig();
 
             services.AddDbContextConfig(builder);
+
+       
 
             services.AddIdentityConfig();
 
