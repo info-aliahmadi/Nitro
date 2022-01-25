@@ -3,9 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using Nitro.Core.Data.Domain;
 using Nitro.Core.Data.EntityConfig.Cms;
 using Nitro.Core.Data.Mapping.Cms;
-using Nitro.Infrastructure;
 
-namespace Nitro.Core.Data
+namespace Nitro.Infrastructure.Data
 {
     /// <summary>
     /// 

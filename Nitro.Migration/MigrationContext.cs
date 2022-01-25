@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Nitro.Core.Data;
-
+using Nitro.Infrastructure.Data;
 
 namespace Nitro.Migrations
 {

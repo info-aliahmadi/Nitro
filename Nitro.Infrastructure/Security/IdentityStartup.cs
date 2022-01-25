@@ -1,4 +1,8 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
+using Nitro.Core.Domain.Auth;
+using Nitro.Infrastructure.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,22 +11,10 @@ using System.Threading.Tasks;
 
 namespace Nitro.Infrastructure.Security
 {
-    public static class IdentityStartup
+    public static class DbContextStartup
     {
-        public static void AddDbContext(this IServiceCollection services, string connectionString)
+        public static void AddIdentityConfig(this IServiceCollection services)
         {
-
-            // the default pool size in 1024 
-            //Make sure that the maxPoolSize corresponds to your usage scenario;
-            //if it is too low, DbContext instances will be constantly created and disposed,degrading performance.
-            //Setting it too high may needlessly consume memory as
-            //unused DbContext instances are maintained in the pool.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString)); // the default pool size in 1024 
-
-            services.AddDatabaseDeveloperPageExceptionFilter();
-
-
 
             services.AddIdentityCore<User>(o => o.SignIn.RequireConfirmedAccount = false)
                  .AddRoles<Role>()
