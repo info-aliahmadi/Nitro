@@ -1,18 +1,29 @@
 using Nitro.Infrastructure.Configuration;
-
-var builder = WebApplication.CreateBuilder(args);
-
-
-
+using Nitro.Infrastructure.Data;
+using Serilog;
+using System.Reflection;
 
 
-builder.Services.ConfigureApplicationServices(builder);
+	SerilogStartup.ConfigureLogging();
+
+	try
+	{
+		var builder = WebApplication.CreateBuilder(args);
 
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-app.ConfigureRequestPipeline();
+		builder.Services.ConfigureApplicationServices(builder);
 
 
-app.Run();
+		var app = builder.Build();
+
+		// Configure the HTTP request pipeline.
+		app.ConfigureRequestPipeline();
+
+
+		app.Run();
+	}
+	catch (System.Exception ex)
+	{
+		Log.Fatal($"Failed to start {Assembly.GetExecutingAssembly().GetName().Name}", ex);
+		throw;
+	}
