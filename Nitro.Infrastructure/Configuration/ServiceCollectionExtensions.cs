@@ -5,7 +5,7 @@ using Nitro.Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Nitro.Infrastructure.Cache;
-using Nitro.Infrastructure.Log;
+using Nitro.Infrastructure.Logs;
 
 namespace Nitro.Infrastructure.Configuration
 {
