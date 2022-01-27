@@ -13,10 +13,10 @@ namespace Nitro.Infrastructure.Data
     public static class ControllerStartup
     {
         public static void AddDbContextConfig(this IServiceCollection services,
-            WebApplicationBuilder builder)
+            IConfiguration configuration)
         {
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+            var connectionString = configuration.GetConnectionString("DefaultConnection");
             // the default pool size in 1024 
             //Make sure that the maxPoolSize corresponds to your usage scenario;
             //if it is too low, DbContext instances will be constantly created and disposed,degrading performance.

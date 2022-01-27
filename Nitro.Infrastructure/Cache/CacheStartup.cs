@@ -1,27 +1,36 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
-using Serilog;
-using Serilog.Exceptions;
-using Serilog.Sinks.Elasticsearch;
-using System;
-using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Nitro.Infrastructure.Data
+namespace Nitro.Infrastructure.Cache
 {
     public static class CacheStartup
     {
-        public static void AddCacheConfig(this IServiceCollection services)
+        public static void AddCacheProvider(this IServiceCollection services,
+            IConfiguration configuration)
         {
-            builder.Host.ConfigureAppConfiguration((context, config) =>
-
+            string cacheProvider = configuration.GetSection("CacheProvider").Value;
+            if (!string.IsNullOrEmpty(cacheProvider))
             {
-                config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
-                config.AddJsonFile(
-                    $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json",
-                    optional: true);
-            }).UseSerilog();
+                const string providerName = "DefaultNitro";
+                services.AddEFCacheProvider(providerName);
 
+                if (cacheProvider == "redis")
+                {
+                    services.AddRedisCacheProvider(configuration, providerName);
+
+                }
+                else if (cacheProvider == "inmemory")
+                {
+                    services.AddInMemoryCacheProvider(configuration, providerName);
+                }
+            }
+            else
+            {
+                services.AddInMemoryEFCacheProvider();
+            }
         }
-    
+
     }
 }

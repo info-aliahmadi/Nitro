@@ -4,6 +4,7 @@ using Nitro.Infrastructure.Data;
 using Nitro.Infrastructure.Security;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Nitro.Infrastructure.Cache;
 
 namespace Nitro.Infrastructure.Configuration
 {
@@ -22,11 +23,11 @@ namespace Nitro.Infrastructure.Configuration
         {
             builder.AddSerilogConfig();
 
-            services.AddDbContextConfig(builder);
-
-       
+            services.AddDbContextConfig(builder.Configuration);
 
             services.AddIdentityConfig();
+
+            services.AddCacheProvider(builder.Configuration);
 
             services.AddControllerConfig();
 
