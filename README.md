@@ -7,5 +7,5 @@ The essential features that every project needs:
 2. Database Context
 3. Repository
 4. Security
-5. Login
+5. Log events
 6. Cache
