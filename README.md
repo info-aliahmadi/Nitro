@@ -1,5 +1,5 @@
 # Nitro
-A Clean Architecture Project for .Net 6 (API Project)
+<strong>A Clean Architecture Project for .Net 6 (API Project)</strong>
 
 The essential features that every project needs:
 
