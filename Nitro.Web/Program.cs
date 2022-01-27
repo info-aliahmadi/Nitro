@@ -4,7 +4,7 @@ using Serilog;
 using System.Reflection;
 
 
-	SerilogStartup.ConfigureLogging();
+	CacheStartup.ConfigureLogging();
 
 	try
 	{

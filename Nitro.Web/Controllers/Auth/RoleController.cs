@@ -5,24 +5,25 @@ namespace Nitro.Web.Controllers
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("[controller]")]
-    public class WeatherForecastController : ControllerBase
+    [Route("Api/Auth/[controller]")]
+    public class RoleController : ControllerBase
     {
         private static readonly string[] Summaries = new[]
         {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-        private readonly ILogger<WeatherForecastController> _logger;
+        private readonly ILogger<RoleController> _logger;
 
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public RoleController(ILogger<RoleController> logger)
         {
             _logger = logger;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
+        [HttpGet(Name = "GetRoles")]
         public IEnumerable<WeatherForecast> Get()
         {
+            _logger.LogInformation("GetAuthors Log");
             return Enumerable.Range(1, 5).Select(index => new WeatherForecast
             {
                 Date = DateTime.Now.AddDays(index),
