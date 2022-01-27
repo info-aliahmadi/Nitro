@@ -5,7 +5,8 @@ The essential features that every project needs:
 
 1. Architecture and connection between libraries
 2. Database Context
-3. Repository
-4. Security
-5. Log events
-6. Cache
+3. Migration
+4. Repository
+5. Security
+6. Log events
+7. Cache
