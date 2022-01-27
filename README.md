@@ -1,5 +1,6 @@
 # Nitro
 A Clean Architecture Project for .Net 6 (API Project)
+
 The essential features that every project needs:
 
 1. Architecture and connection between libraries
