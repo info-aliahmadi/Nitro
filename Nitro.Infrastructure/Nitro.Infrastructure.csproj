@@ -35,6 +35,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Nitro.Core\Nitro.Core.csproj" />
+    <ProjectReference Include="..\Nitro.Kernel\Nitro.Kernel.csproj" />
   </ItemGroup>
 
 </Project>
