@@ -5,9 +5,9 @@ using Nitro.Core.Data.Domain;
 
 namespace Nitro.Core.Data.EntityConfig.Cms
 {
-    public class ContentBuilder : IEntityTypeConfiguration<Content>
+    public class CategoryConfiguration : IEntityTypeConfiguration<Category>
     {
-        public void Configure(EntityTypeBuilder<Content> builder)
+        public void Configure(EntityTypeBuilder<Category> builder)
         {
             builder.HasKey(o => o.Id);
         }

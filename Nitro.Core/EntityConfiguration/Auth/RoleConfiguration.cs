@@ -4,7 +4,7 @@ using Nitro.Core.Domain.Auth;
 
 namespace Nitro.Core.Mapping.Auth
 {
-    public class RoleBuilder : IEntityTypeConfiguration<Role>
+    public class RoleConfiguration : IEntityTypeConfiguration<Role>
     {
         public void Configure(EntityTypeBuilder<Role> builder)
         {

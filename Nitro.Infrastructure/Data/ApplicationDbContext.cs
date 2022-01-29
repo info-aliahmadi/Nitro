@@ -21,9 +21,9 @@ namespace Nitro.Infrastructure.Data
 
             #region Cms Builder
 
-            modelBuilder.ApplyConfiguration(new AuthorBuilder());
-            modelBuilder.ApplyConfiguration(new CategoryBuilder());
-            modelBuilder.ApplyConfiguration(new ContentBuilder());
+            modelBuilder.ApplyConfiguration(new AuthorConfiguration());
+            modelBuilder.ApplyConfiguration(new CategoryConfiguration());
+            modelBuilder.ApplyConfiguration(new ContentConfiguration());
 
             #endregion
 

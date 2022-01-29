@@ -4,11 +4,11 @@ using Nitro.Core.Domain.Auth;
 
 namespace Nitro.Core.Mapping.Auth
 {
-    public class UserClaimBuilder : IEntityTypeConfiguration<UserClaim>
+    public class UserRoleConfiguration : IEntityTypeConfiguration<UserRole>
     {
-        public void Configure(EntityTypeBuilder<UserClaim> builder)
+        public void Configure(EntityTypeBuilder<UserRole> builder)
         {
-            builder.ToTable("UserClaim", "Auth");
+            builder.ToTable("UserRole", "Auth");
         }
     }
 }

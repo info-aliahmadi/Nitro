@@ -18,13 +18,13 @@ namespace Nitro.Infrastructure
         {
             base.OnModelCreating(modelBuilder);
             #region Auth Builder
-            modelBuilder.ApplyConfiguration(new UserBuilder());
-            modelBuilder.ApplyConfiguration(new RoleBuilder());
-            modelBuilder.ApplyConfiguration(new UserClaimBuilder());
-            modelBuilder.ApplyConfiguration(new UserRoleBuilder());
-            modelBuilder.ApplyConfiguration(new UserLoginBuilder());
-            modelBuilder.ApplyConfiguration(new RoleClaimBuilder());
-            modelBuilder.ApplyConfiguration(new UserTokenBuilder());
+            modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
+            modelBuilder.ApplyConfiguration(new UserClaimConfiguration());
+            modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
+            modelBuilder.ApplyConfiguration(new UserLoginConfiguration());
+            modelBuilder.ApplyConfiguration(new RoleClaimConfiguration());
+            modelBuilder.ApplyConfiguration(new UserTokenConfiguration());
             #endregion
 
         }
