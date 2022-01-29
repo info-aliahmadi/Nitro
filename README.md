@@ -10,3 +10,6 @@ The essential features that every project needs:
 5. Security
 6. Log events
 7. Cache
+8. Bulk Insert
+9. Localization
+10. Blob storage
