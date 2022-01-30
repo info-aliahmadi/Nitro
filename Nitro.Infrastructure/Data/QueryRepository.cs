@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
+using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel.Extensions;
 using Nitro.Kernel.Interfaces;
 
@@ -22,9 +23,9 @@ namespace Nitro.Infrastructure.Data
 {
     internal class QueryRepository : IQueryRepository
     {
-        private readonly DbContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public QueryRepository(DbContext dbContext)
+        public QueryRepository(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

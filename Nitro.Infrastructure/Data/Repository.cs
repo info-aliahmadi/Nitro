@@ -1,163 +1,122 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Logging;
 using Nitro.Kernel.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nitro.Infrastructure.Data
 {
-    public class Repository<T> : IRepository<T> where T : class
+    internal class Repository : QueryRepository, IRepository
     {
-        protected ApplicationDbContext context;
-        internal DbSet<T> dbSet;
-        public readonly ILogger _logger;
+        private readonly ApplicationDbContext _dbContext;
 
-        public Repository(
-            ApplicationDbContext context,
-            ILogger logger)
+        public Repository(ApplicationDbContext dbContext)
+            : base(dbContext)
         {
-            this.context = context;
-            this.dbSet = context.Set<T>();
-            _logger = logger;
+            _dbContext = dbContext;
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync(
             IsolationLevel isolationLevel = IsolationLevel.Unspecified,
             CancellationToken cancellationToken = default)
         {
-            IDbContextTransaction dbContextTransaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
+            IDbContextTransaction dbContextTransaction = await _dbContext.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
             return dbContextTransaction;
         }
 
-        public async Task<List<T>> GetListAsync<T>(CancellationToken cancellationToken = default) where T : class
+        public async Task<T> InsertAsync<T>(T entity, CancellationToken cancellationToken = default)
+           where T : class
         {
-            return await GetListAsync<T>(false, cancellationToken);
-        }
-
-        public async Task<List<T>> GetListAsync<T>(bool asNoTracking, CancellationToken cancellationToken = default) where T : class
-        {
-            IQueryable<T> query = context.Set<T>();
-
-            if (asNoTracking)
+            if (entity == null)
             {
-                query = query.AsNoTracking();
+                throw new ArgumentNullException(nameof(entity));
             }
 
-            List<T> items = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
+            EntityEntry<T> entityEntry = await _dbContext.Set<T>().AddAsync(entity, cancellationToken).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-            return items;
+            return entity;
         }
 
-        public async Task<T> GetByIdAsync<T>(object id, CancellationToken cancellationToken = default) where T : class
+        public async Task InsertAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+           where T : class
         {
-            if (id == null)
+            if (entities == null)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentNullException(nameof(entities));
             }
 
-            return GetByIdAsync<T>(id, false, cancellationToken);
+            await _dbContext.Set<T>().AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<T> GetByIdAsync<T>(object id, bool asNoTracking, CancellationToken cancellationToken = default) where T : class
+        public async Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default)
+            where T : class
         {
-            if (id == null)
+            if (entity == null)
             {
-                throw new ArgumentNullException(nameof(id));
+                throw new ArgumentNullException(nameof(entity));
             }
 
-          
-            IQueryable<T> query = context.Set<T>();
+            _dbContext.Set<T>().Update(entity);
 
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
 
-            if (asNoTracking)
+        public async Task UpdateAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+            where T : class
+        {
+            if (entities == null)
             {
-                query = query.AsNoTracking();
+                throw new ArgumentNullException(nameof(entities));
             }
 
-            T enity = await query.FirstOrDefaultAsync(expressionTree, cancellationToken).ConfigureAwait(false);
-            return enity;
+            _dbContext.Set<T>().UpdateRange(entities);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<object[]> InsertAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+        public async Task DeleteAsync<T>(T entity, CancellationToken cancellationToken = default)
+            where T : class
         {
-            throw new NotImplementedException();
+            if (entity == null)
+            {
+                throw new ArgumentNullException(nameof(entity));
+            }
+
+            _dbContext.Set<T>().Remove(entity);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task InsertAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
+        public async Task DeleteAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+            where T : class
         {
-            throw new NotImplementedException();
+            if (entities == null)
+            {
+                throw new ArgumentNullException(nameof(entities));
+            }
+
+            _dbContext.Set<T>().RemoveRange(entities);
+            await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+        public Task<int> ExecuteSqlCommandAsync(string sql, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return _dbContext.Database.ExecuteSqlRawAsync(sql, cancellationToken);
         }
 
-        public async Task UpdateAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
+        public Task<int> ExecuteSqlCommandAsync(string sql, params object[] parameters)
         {
-            throw new NotImplementedException();
+            return _dbContext.Database.ExecuteSqlRawAsync(sql, parameters);
         }
 
-        public async Task DeleteAsync<T>(T entity, CancellationToken cancellationToken = default) where T : class
+        public Task<int> ExecuteSqlCommandAsync(string sql, IEnumerable<object> parameters, CancellationToken cancellationToken = default)
         {
-            throw new NotImplementedException();
+            return _dbContext.Database.ExecuteSqlRawAsync(sql, parameters, cancellationToken);
         }
 
-        public async Task DeleteAsync<T>(object id, CancellationToken cancellationToken = default) where T : class
+        public void ResetContextState()
         {
-            throw new NotImplementedException();
+            _dbContext.ChangeTracker.Clear();
         }
-
-        public async Task DeleteAsync<T>(IEnumerable<T> entities, CancellationToken cancellationToken = default) where T : class
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<T1>> GetFromRawSqlAsync<T1>(string sql, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<T1>> GetFromRawSqlAsync<T1>(string sql, object parameter, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<List<T1>> GetFromRawSqlAsync<T1>(string sql, IEnumerable<object> parameters, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<int> ExecuteSqlCommandAsync(string sql, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<int> ExecuteSqlCommandAsync(string sql, params object[] parameters)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<int> ExecuteSqlCommandAsync(string sql, IEnumerable<object> parameters, CancellationToken cancellationToken = default)
-        {
-            throw new NotImplementedException();
-        }
-
-
-        /// <summary>
-        /// Gets a table
-        /// </summary>
-        public virtual IQueryable<T> Table<T>() where T : class => context.Set<T>();
     }
 }
