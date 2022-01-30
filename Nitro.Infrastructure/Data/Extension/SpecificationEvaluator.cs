@@ -96,6 +96,15 @@ namespace Nitro.Infrastructure.Data.Extension
                 }
             }
 
+            // modify the IQueryable using the specification's criteria expression
+            if (specification.ConditionsByDynamic.Any())
+            {
+                foreach (var item in specification.ConditionsByDynamic)
+                {
+                    query = query.Where(item);
+                }
+            }
+
             // Includes all expression-based includes
             if (specification.Includes != null)
             {
@@ -107,9 +116,12 @@ namespace Nitro.Infrastructure.Data.Extension
             {
                 query = specification.OrderBy(query);
             }
-            else if (!string.IsNullOrWhiteSpace(specification.OrderByDynamic.ColumnName) && !string.IsNullOrWhiteSpace(specification.OrderByDynamic.ColumnName))
+            else if (specification.OrderByDynamic.Any())
             {
-                query = query.OrderBy(specification.OrderByDynamic.ColumnName + " " + specification.OrderByDynamic.SortDirection);
+                foreach (var item in specification.OrderByDynamic)
+                {
+                    query = query.OrderBy(item.ColumnName + " " + item.SortDirection);
+                }
             }
 
             return query;
