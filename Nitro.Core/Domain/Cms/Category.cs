@@ -3,7 +3,7 @@
 
 namespace Nitro.Core.Data.Domain
 {
-    public class Category : BaseEntity
+    public class Category : BaseEntity<int>
     {
         /// <summary>
         /// 

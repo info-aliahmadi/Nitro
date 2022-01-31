@@ -3,7 +3,7 @@ using Nitro.Kernel;
 
 namespace Nitro.Core.Data.Domain
 {
-    public class Author : BaseEntity
+    public class Author : BaseEntity<int>
     {
         public int UserId { get; set; }
         public User User { get; set; }

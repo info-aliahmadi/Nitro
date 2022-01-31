@@ -5,11 +5,9 @@ namespace Nitro.Kernel
     /// <summary>
     /// Represents the base class for entities
     /// </summary>
-    public abstract partial class BaseEntity
+    public abstract class BaseEntity<PKType>
     {
-        /// <summary>
-        /// Gets or sets the entity identifier
-        /// </summary>
-        public int Id { get; set; }
+        public PKType Id { get; set; }
+
     }
 }

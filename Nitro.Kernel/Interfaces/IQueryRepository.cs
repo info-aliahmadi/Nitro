@@ -1,12 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Kernel.Extensions;
-using System;
-using System.Collections.Generic;
 using System.Data.Common;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Nitro.Kernel.Interfaces
 {
@@ -231,7 +226,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(object id, CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the entity
@@ -245,7 +240,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(object id, bool asNoTracking, CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the entity
@@ -260,7 +255,7 @@ namespace Nitro.Kernel.Interfaces
             object id,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the entity
@@ -279,7 +274,7 @@ namespace Nitro.Kernel.Interfaces
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             bool asNoTracking,
             CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the specified projected entity
@@ -296,7 +291,7 @@ namespace Nitro.Kernel.Interfaces
             object id,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
             CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes <see cref="Expression{Func}"/> as parameter and returns <typeparamref name="TEntity"/>.

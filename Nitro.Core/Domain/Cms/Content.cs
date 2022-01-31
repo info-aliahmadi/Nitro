@@ -2,7 +2,7 @@
 
 namespace Nitro.Core.Data.Domain
 {
-    public class Content : BaseEntity
+    public class Content : BaseEntity<int>
     {
 
         /// <summary>

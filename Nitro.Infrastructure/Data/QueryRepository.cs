@@ -2,20 +2,16 @@
 // Copyright (c) TanvirArjel. All rights reserved.
 // </copyright>
 
-using System;
-using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Infrastructure.Data.Extension;
+using Nitro.Kernel;
 using Nitro.Kernel.Extensions;
 using Nitro.Kernel.Interfaces;
 
@@ -30,36 +26,38 @@ namespace Nitro.Infrastructure.Data
             _dbContext = dbContext;
         }
 
-        public IQueryable<T> GetQueryable<T>()
+        public IQueryable<T> Table<T>()
             where T : class
         {
             return _dbContext.Set<T>();
         }
 
-        public Task<List<T>> GetListAsync<T>(CancellationToken cancellationToken = default)
+        public Task<List<T>> GetListAsync<T>(bool cacheable = false,CancellationToken cancellationToken = default)
             where T : class
         {
-            return GetListAsync<T>(false, cancellationToken);
+            return GetListAsync<T>(asNoTracking: false,cacheable: cacheable, cancellationToken);
         }
 
-        public Task<List<T>> GetListAsync<T>(bool asNoTracking, CancellationToken cancellationToken = default)
+        public Task<List<T>> GetListAsync<T>(bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
             Func<IQueryable<T>, IIncludableQueryable<T, object>> nullValue = null;
-            return GetListAsync(nullValue, asNoTracking, cancellationToken);
+            return GetListAsync(nullValue, asNoTracking, cacheable: cacheable, cancellationToken);
         }
 
         public Task<List<T>> GetListAsync<T>(
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+             bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
-            return GetListAsync(includes, false, cancellationToken);
+            return GetListAsync(includes, false, cacheable: cacheable, cancellationToken);
         }
 
         public async Task<List<T>> GetListAsync<T>(
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -75,30 +73,37 @@ namespace Nitro.Infrastructure.Data
                 query = query.AsNoTracking();
             }
 
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
             List<T> items = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
 
             return items;
         }
 
-        public Task<List<T>> GetListAsync<T>(Expression<Func<T, bool>> condition, CancellationToken cancellationToken = default)
+        public Task<List<T>> GetListAsync<T>(Expression<Func<T, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
              where T : class
         {
-            return GetListAsync(condition, false, cancellationToken);
+            return GetListAsync(condition,false, cacheable, cancellationToken);
         }
 
         public Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
              where T : class
         {
-            return GetListAsync(condition, null, asNoTracking, cancellationToken);
+            return GetListAsync(condition, null, asNoTracking, cacheable, cancellationToken);
         }
 
         public async Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking,
+            bool cacheable =false,
             CancellationToken cancellationToken = default)
              where T : class
         {
@@ -119,20 +124,26 @@ namespace Nitro.Infrastructure.Data
                 query = query.AsNoTracking();
             }
 
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
             List<T> items = await query.ToListAsync(cancellationToken).ConfigureAwait(false);
 
             return items;
         }
 
-        public Task<List<T>> GetListAsync<T>(Specification<T> specification, CancellationToken cancellationToken = default)
+        public Task<List<T>> GetListAsync<T>(Specification<T> specification, bool cacheable = false, CancellationToken cancellationToken = default)
            where T : class
         {
-            return GetListAsync(specification, false, cancellationToken);
+            return GetListAsync(specification, false, cacheable, cancellationToken);
         }
 
         public async Task<List<T>> GetListAsync<T>(
             Specification<T> specification,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
            where T : class
         {
@@ -148,11 +159,17 @@ namespace Nitro.Infrastructure.Data
                 query = query.AsNoTracking();
             }
 
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
             return await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -160,8 +177,14 @@ namespace Nitro.Infrastructure.Data
             {
                 throw new ArgumentNullException(nameof(selectExpression));
             }
+            IQueryable<T> query = _dbContext.Set<T>();
 
-            List<TProjectedType> entities = await _dbContext.Set<T>()
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
+            List<TProjectedType> entities = await query
                 .Select(selectExpression).ToListAsync(cancellationToken).ConfigureAwait(false);
 
             return entities;
@@ -170,6 +193,7 @@ namespace Nitro.Infrastructure.Data
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Expression<Func<T, bool>> condition,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -184,6 +208,11 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Where(condition);
             }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
 
             List<TProjectedType> projectedEntites = await query.Select(selectExpression)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -194,6 +223,7 @@ namespace Nitro.Infrastructure.Data
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Specification<T> specification,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -208,6 +238,10 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.GetSpecifiedQuery(specification);
             }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
 
             return await query.Select(selectExpression)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
@@ -215,6 +249,7 @@ namespace Nitro.Infrastructure.Data
 
         public async Task<PaginatedList<T>> GetListAsync<T>(
             PaginationSpecification<T> specification,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -223,13 +258,21 @@ namespace Nitro.Infrastructure.Data
                 throw new ArgumentNullException(nameof(specification));
             }
 
-            PaginatedList<T> paginatedList = await _dbContext.Set<T>().ToPaginatedListAsync(specification, cancellationToken);
+            IQueryable<T> query = _dbContext.Set<T>();
+
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
+            PaginatedList<T> paginatedList = await query.ToPaginatedListAsync(specification, cancellationToken);
             return paginatedList;
         }
 
         public async Task<PaginatedList<TProjectedType>> GetListAsync<T, TProjectedType>(
             PaginationSpecification<T> specification,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
             where TProjectedType : class
@@ -246,85 +289,67 @@ namespace Nitro.Infrastructure.Data
 
             IQueryable<T> query = _dbContext.Set<T>().GetSpecifiedQuery((SpecificationBase<T>)specification);
 
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+
             PaginatedList<TProjectedType> paginatedList = await query.Select(selectExpression)
                 .ToPaginatedListAsync(specification.PageIndex, specification.PageSize, cancellationToken);
             return paginatedList;
         }
-
-        public Task<T> GetByIdAsync<T>(object id, CancellationToken cancellationToken = default)
-            where T : class
+        public Task<T> GetByIdAsync<T>(object id, bool cacheable=false, CancellationToken cancellationToken = default)
+                  where T : BaseEntity<object>
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            return GetByIdAsync<T>(id, false, cancellationToken);
+            return GetByIdAsync<T>(id, asNoTracking:false, cacheable: cacheable, cancellationToken);
         }
 
-        public Task<T> GetByIdAsync<T>(object id, bool asNoTracking, CancellationToken cancellationToken = default)
-            where T : class
+        public Task<T> GetByIdAsync<T>(object id, 
+            bool asNoTracking = false,
+            bool cacheable = false, 
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<object>
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            return GetByIdAsync<T>(id, null, asNoTracking, cancellationToken);
+            return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
         }
 
         public Task<T> GetByIdAsync<T>(
             object id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : class
+            where T : BaseEntity<object>
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            return GetByIdAsync(id, includes, false, cancellationToken);
+            return GetByIdAsync(id, includes, asNoTracking: false, cacheable:cacheable, cancellationToken);
         }
 
         public async Task<T> GetByIdAsync<T>(
             object id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking = false,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : class
+            where T : BaseEntity<object>
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
-
-            IEntityType entityType = _dbContext.Model.FindEntityType(typeof(T));
-
-            string primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            Type primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-            {
-                throw new ArgumentException("Entity does not have any primary key defined", nameof(id));
-            }
-
-            object primayKeyValue = null;
-
-            try
-            {
-                primayKeyValue = Convert.ChangeType(id, primaryKeyType, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException($"You can not assign a value of type {id.GetType()} to a property of type {primaryKeyType}");
-            }
-
-            ParameterExpression pe = Expression.Parameter(typeof(T), "entity");
-            MemberExpression me = Expression.Property(pe, primaryKeyName);
-            ConstantExpression constant = Expression.Constant(primayKeyValue, primaryKeyType);
-            BinaryExpression body = Expression.Equal(me, constant);
-            Expression<Func<T, bool>> expressionTree = Expression.Lambda<Func<T, bool>>(body, new[] { pe });
 
             IQueryable<T> query = _dbContext.Set<T>();
 
@@ -337,16 +362,25 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.AsNoTracking();
             }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
 
-            T enity = await query.FirstOrDefaultAsync(expressionTree, cancellationToken).ConfigureAwait(false);
+            T? enity = await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
             return enity;
         }
 
         public async Task<TProjectedType> GetByIdAsync<T, TProjectedType>(
             object id,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : class
+            where T : BaseEntity<object>
         {
             if (id == null)
             {
@@ -357,42 +391,25 @@ namespace Nitro.Infrastructure.Data
             {
                 throw new ArgumentNullException(nameof(selectExpression));
             }
-
-            IEntityType entityType = _dbContext.Model.FindEntityType(typeof(T));
-
-            string primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            Type primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-            {
-                throw new ArgumentException("Entity does not have any primary key defined", nameof(id));
-            }
-
-            object primayKeyValue = null;
-
-            try
-            {
-                primayKeyValue = Convert.ChangeType(id, primaryKeyType, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException($"You can not assign a value of type {id.GetType()} to a property of type {primaryKeyType}");
-            }
-
-            ParameterExpression pe = Expression.Parameter(typeof(T), "entity");
-            MemberExpression me = Expression.Property(pe, primaryKeyName);
-            ConstantExpression constant = Expression.Constant(primayKeyValue, primaryKeyType);
-            BinaryExpression body = Expression.Equal(me, constant);
-            Expression<Func<T, bool>> expressionTree = Expression.Lambda<Func<T, bool>>(body, new[] { pe });
-
             IQueryable<T> query = _dbContext.Set<T>();
 
-            return await query.Where(expressionTree).Select(selectExpression)
+            
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+            TProjectedType? enity = await query.Where(x => x.Id == id).Select(selectExpression)
                 .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return enity;
         }
 
         public Task<T> GetAsync<T>(
             Expression<Func<T, bool>> condition,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
            where T : class
         {
@@ -402,25 +419,28 @@ namespace Nitro.Infrastructure.Data
         public Task<T> GetAsync<T>(
             Expression<Func<T, bool>> condition,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
            where T : class
         {
-            return GetAsync(condition, null, asNoTracking, cancellationToken);
+            return GetAsync(condition, null, asNoTracking, cacheable, cancellationToken);
         }
 
         public Task<T> GetAsync<T>(
             Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
            where T : class
         {
-            return GetAsync(condition, includes, false, cancellationToken);
+            return GetAsync(condition, includes, false, cacheable, cancellationToken);
         }
 
         public async Task<T> GetAsync<T>(
             Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
            where T : class
         {
@@ -444,13 +464,14 @@ namespace Nitro.Infrastructure.Data
             return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        public Task<T> GetAsync<T>(Specification<T> specification, CancellationToken cancellationToken = default)
+        public Task<T> GetAsync<T>(Specification<T> specification,
+            bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
-            return GetAsync(specification, false, cancellationToken);
+            return GetAsync(specification, false, cacheable, cancellationToken);
         }
 
-        public async Task<T> GetAsync<T>(Specification<T> specification, bool asNoTracking, CancellationToken cancellationToken = default)
+        public async Task<T> GetAsync<T>(Specification<T> specification, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
             IQueryable<T> query = _dbContext.Set<T>();
@@ -464,6 +485,10 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.AsNoTracking();
             }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
 
             return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -471,6 +496,7 @@ namespace Nitro.Infrastructure.Data
         public async Task<TProjectedType> GetAsync<T, TProjectedType>(
             Expression<Func<T, bool>> condition,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -485,6 +511,10 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Where(condition);
             }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
 
             return await query.Select(selectExpression).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
@@ -492,6 +522,7 @@ namespace Nitro.Infrastructure.Data
         public async Task<TProjectedType> GetAsync<T, TProjectedType>(
             Specification<T> specification,
             Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : class
         {
@@ -507,17 +538,21 @@ namespace Nitro.Infrastructure.Data
                 query = query.GetSpecifiedQuery(specification);
             }
 
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
             return await query.Select(selectExpression).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public Task<bool> ExistsAsync<T>(CancellationToken cancellationToken = default)
-           where T : class
+           where T : BaseEntity<object>
         {
             return ExistsAsync<T>(null, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync<T>(Expression<Func<T, bool>> condition, CancellationToken cancellationToken = default)
-           where T : class
+           where T : BaseEntity<object>
         {
             IQueryable<T> query = _dbContext.Set<T>();
 
@@ -531,43 +566,16 @@ namespace Nitro.Infrastructure.Data
         }
 
         public async Task<bool> ExistsByIdAsync<T>(object id, CancellationToken cancellationToken = default)
-           where T : class
+           where T : BaseEntity<object>
         {
             if (id == null)
             {
                 throw new ArgumentNullException(nameof(id));
             }
 
-            IEntityType entityType = _dbContext.Model.FindEntityType(typeof(T));
-
-            string primaryKeyName = entityType.FindPrimaryKey().Properties.Select(p => p.Name).FirstOrDefault();
-            Type primaryKeyType = entityType.FindPrimaryKey().Properties.Select(p => p.ClrType).FirstOrDefault();
-
-            if (primaryKeyName == null || primaryKeyType == null)
-            {
-                throw new ArgumentException("Entity does not have any primary key defined", nameof(id));
-            }
-
-            object primayKeyValue = null;
-
-            try
-            {
-                primayKeyValue = Convert.ChangeType(id, primaryKeyType, CultureInfo.InvariantCulture);
-            }
-            catch (Exception)
-            {
-                throw new ArgumentException($"You can not assign a value of type {id.GetType()} to a property of type {primaryKeyType}");
-            }
-
-            ParameterExpression pe = Expression.Parameter(typeof(T), "entity");
-            MemberExpression me = Expression.Property(pe, primaryKeyName);
-            ConstantExpression constant = Expression.Constant(primayKeyValue, primaryKeyType);
-            BinaryExpression body = Expression.Equal(me, constant);
-            Expression<Func<T, bool>> expressionTree = Expression.Lambda<Func<T, bool>>(body, new[] { pe });
-
             IQueryable<T> query = _dbContext.Set<T>();
 
-            bool isExistent = await query.AnyAsync(expressionTree, cancellationToken).ConfigureAwait(false);
+            bool isExistent = await query.AnyAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
             return isExistent;
         }
 
@@ -605,42 +613,6 @@ namespace Nitro.Infrastructure.Data
             }
 
             return await query.CountAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<long> GetLongCountAsync<T>(CancellationToken cancellationToken = default)
-            where T : class
-        {
-            long count = await _dbContext.Set<T>().LongCountAsync(cancellationToken).ConfigureAwait(false);
-            return count;
-        }
-
-        public async Task<long> GetLongCountAsync<T>(Expression<Func<T, bool>> condition, CancellationToken cancellationToken = default)
-            where T : class
-        {
-            IQueryable<T> query = _dbContext.Set<T>();
-
-            if (condition != null)
-            {
-                query = query.Where(condition);
-            }
-
-            return await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
-        }
-
-        public async Task<long> GetLongCountAsync<T>(IEnumerable<Expression<Func<T, bool>>> conditions, CancellationToken cancellationToken = default)
-            where T : class
-        {
-            IQueryable<T> query = _dbContext.Set<T>();
-
-            if (conditions != null)
-            {
-                foreach (Expression<Func<T, bool>> expression in conditions)
-                {
-                    query = query.Where(expression);
-                }
-            }
-
-            return await query.LongCountAsync(cancellationToken).ConfigureAwait(false);
         }
 
         // DbConext level members

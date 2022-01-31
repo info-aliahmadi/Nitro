@@ -99,9 +99,9 @@ namespace Nitro.Infrastructure.Data.Extension
             // modify the IQueryable using the specification's criteria expression
             if (specification.ConditionsByDynamic.Any())
             {
-                foreach (var item in specification.ConditionsByDynamic)
+                foreach (var conditon in specification.ConditionsByDynamic)
                 {
-                    query = query.Where(item);
+                    query = query.Where(conditon);
                 }
             }
 

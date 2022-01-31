@@ -3,9 +3,8 @@
 // </copyright>
 
 
-using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using Microsoft.EntityFrameworkCore;
-using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel.Extensions;
 
 namespace Nitro.Infrastructure.Data.Extension
@@ -96,15 +95,6 @@ namespace Nitro.Infrastructure.Data.Extension
             }
 
             IQueryable<T> countSource = source;
-
-            // modify the IQueryable using the specification's expression criteria
-            if (specification.Conditions != null && specification.Conditions.Any())
-            {
-                foreach (Expression<Func<T, bool>> conditon in specification.Conditions)
-                {
-                    countSource = source.Where(conditon);
-                }
-            }
 
             long count = await countSource.LongCountAsync(cancellationToken);
 
