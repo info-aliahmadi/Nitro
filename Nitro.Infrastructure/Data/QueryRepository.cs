@@ -8,7 +8,6 @@ using System.Globalization;
 using System.Linq.Expressions;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel;
@@ -26,11 +25,8 @@ namespace Nitro.Infrastructure.Data
             _dbContext = dbContext;
         }
 
-        public IQueryable<T> Table<T>()
-            where T : class
-        {
-            return _dbContext.Set<T>();
-        }
+        public IQueryable<T> Table<T>() where T : class => _dbContext.Set<T>();
+ 
 
         public Task<List<T>> GetListAsync<T>(bool cacheable = false,CancellationToken cancellationToken = default)
             where T : class
@@ -83,7 +79,10 @@ namespace Nitro.Infrastructure.Data
             return items;
         }
 
-        public Task<List<T>> GetListAsync<T>(Expression<Func<T, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
+        public Task<List<T>> GetListAsync<T>(
+            Expression<Func<T, bool>> condition,
+            bool cacheable = false, 
+            CancellationToken cancellationToken = default)
              where T : class
         {
             return GetListAsync(condition,false, cacheable, cancellationToken);

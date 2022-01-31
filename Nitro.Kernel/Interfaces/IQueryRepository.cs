@@ -15,8 +15,7 @@ namespace Nitro.Kernel.Interfaces
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns>Returns <see cref="IQueryable{T}"/>.</returns>
-        IQueryable<TEntity> GetQueryable<TEntity>()
-            where TEntity : class;
+        IQueryable<T> Table<T>() where T : class;
 
         /// <summary>
         /// This method returns <see cref="List{T}"/> without any filter. Call only when you want to pull all the data from the source.
@@ -24,7 +23,7 @@ namespace Nitro.Kernel.Interfaces
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
-        Task<List<TEntity>> GetListAsync<TEntity>(CancellationToken cancellationToken = default)
+        Task<List<TEntity>> GetListAsync<TEntity>(bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -36,7 +35,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
-        Task<List<TEntity>> GetListAsync<TEntity>(bool asNoTracking, CancellationToken cancellationToken = default)
+        Task<List<TEntity>> GetListAsync<TEntity>(bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -48,6 +47,7 @@ namespace Nitro.Kernel.Interfaces
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -64,6 +64,7 @@ namespace Nitro.Kernel.Interfaces
         Task<List<TEntity>> GetListAsync<TEntity>(
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -74,7 +75,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="condition">The condition on which entity list will be returned.</param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
-        Task<List<TEntity>> GetListAsync<TEntity>(Expression<Func<TEntity, bool>> condition, CancellationToken cancellationToken = default)
+        Task<List<TEntity>> GetListAsync<TEntity>(Expression<Func<TEntity, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -90,6 +91,7 @@ namespace Nitro.Kernel.Interfaces
         Task<List<TEntity>> GetListAsync<TEntity>(
             Expression<Func<TEntity, bool>> condition,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -108,6 +110,7 @@ namespace Nitro.Kernel.Interfaces
             Expression<Func<TEntity, bool>> condition,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             bool asNoTracking = false,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -120,7 +123,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
-        Task<List<TEntity>> GetListAsync<TEntity>(Specification<TEntity> specification, CancellationToken cancellationToken = default)
+        Task<List<TEntity>> GetListAsync<TEntity>(Specification<TEntity> specification, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -135,7 +138,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
-        Task<List<TEntity>> GetListAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, CancellationToken cancellationToken = default)
+        Task<List<TEntity>> GetListAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -148,6 +151,7 @@ namespace Nitro.Kernel.Interfaces
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<List<TProjectedType>> GetListAsync<TEntity, TProjectedType>(
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -164,6 +168,7 @@ namespace Nitro.Kernel.Interfaces
         Task<List<TProjectedType>> GetListAsync<TEntity, TProjectedType>(
             Expression<Func<TEntity, bool>> condition,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -183,6 +188,7 @@ namespace Nitro.Kernel.Interfaces
         Task<List<TProjectedType>> GetListAsync<TEntity, TProjectedType>(
             Specification<TEntity> specification,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -196,6 +202,7 @@ namespace Nitro.Kernel.Interfaces
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="specification"/> is smaller than 1.</exception>
         Task<PaginatedList<TEntity>> GetListAsync<TEntity>(
             PaginationSpecification<TEntity> specification,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -213,6 +220,7 @@ namespace Nitro.Kernel.Interfaces
         Task<PaginatedList<TProjectedType>> GetListAsync<TEntity, TProjectedType>(
             PaginationSpecification<TEntity> specification,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class
             where TProjectedType : class;
@@ -225,7 +233,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
-        Task<TEntity> GetByIdAsync<TEntity>(object id, CancellationToken cancellationToken = default)
+        Task<TEntity> GetByIdAsync<TEntity>(object id, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<object>;
 
         /// <summary>
@@ -239,7 +247,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
-        Task<TEntity> GetByIdAsync<TEntity>(object id, bool asNoTracking, CancellationToken cancellationToken = default)
+        Task<TEntity> GetByIdAsync<TEntity>(object id, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<object>;
 
         /// <summary>
@@ -254,6 +262,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TEntity> GetByIdAsync<TEntity>(
             object id,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<object>;
 
@@ -273,6 +282,7 @@ namespace Nitro.Kernel.Interfaces
             object id,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<object>;
 
@@ -290,6 +300,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TProjectedType> GetByIdAsync<TEntity, TProjectedType>(
             object id,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<object>;
 
@@ -300,7 +311,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="condition">The conditon on which entity will be returned.</param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <typeparamref name="TEntity"/>.</returns>
-        Task<TEntity> GetAsync<TEntity>(Expression<Func<TEntity, bool>> condition, CancellationToken cancellationToken = default)
+        Task<TEntity> GetAsync<TEntity>(Expression<Func<TEntity, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -316,6 +327,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TEntity> GetAsync<TEntity>(
             Expression<Func<TEntity, bool>> condition,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -330,6 +342,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TEntity> GetAsync<TEntity>(
             Expression<Func<TEntity, bool>> condition,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -348,6 +361,7 @@ namespace Nitro.Kernel.Interfaces
             Expression<Func<TEntity, bool>> condition,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> includes,
             bool asNoTracking,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -360,7 +374,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
-        Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, CancellationToken cancellationToken = default)
+        Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -375,7 +389,7 @@ namespace Nitro.Kernel.Interfaces
         /// </param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
-        Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, CancellationToken cancellationToken = default)
+        Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where TEntity : class;
 
         /// <summary>
@@ -391,6 +405,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TProjectedType> GetAsync<TEntity, TProjectedType>(
             Expression<Func<TEntity, bool>> condition,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -410,6 +425,7 @@ namespace Nitro.Kernel.Interfaces
         Task<TProjectedType> GetAsync<TEntity, TProjectedType>(
             Specification<TEntity> specification,
             Expression<Func<TEntity, TProjectedType>> selectExpression,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : class;
 
@@ -421,7 +437,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="bool"/>.</returns>
         Task<bool> ExistsAsync<TEntity>(CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes a predicate based on which existence of the entity will be determined
@@ -432,7 +448,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="bool"/>.</returns>
         Task<bool> ExistsAsync<TEntity>(Expression<Func<TEntity, bool>> condition, CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method takes primary key value of the entity whose existence be determined
@@ -443,7 +459,7 @@ namespace Nitro.Kernel.Interfaces
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="bool"/>.</returns>
         Task<bool> ExistsByIdAsync<TEntity>(object id, CancellationToken cancellationToken = default)
-            where TEntity : class;
+            where TEntity : BaseEntity<object>;
 
         /// <summary>
         /// This method returns all count in <see cref="int"/> type.
@@ -474,35 +490,7 @@ namespace Nitro.Kernel.Interfaces
         Task<int> GetCountAsync<TEntity>(IEnumerable<Expression<Func<TEntity, bool>>> conditions, CancellationToken cancellationToken = default)
             where TEntity : class;
 
-        /// <summary>
-        /// This method returns all count in <see cref="long"/> type.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
-        /// <returns>Retuns <see cref="Task"/> of <see cref="long"/>.</returns>
-        Task<long> GetLongCountAsync<TEntity>(CancellationToken cancellationToken = default)
-            where TEntity : class;
-
-        /// <summary>
-        /// This method takes one or more <em>predicates</em> and returns the count in <see cref="long"/> type.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <param name="condition">The condition based on which count will be done.</param>
-        /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
-        /// <returns>Retuns <see cref="Task"/> of <see cref="long"/>.</returns>
-        Task<long> GetLongCountAsync<TEntity>(Expression<Func<TEntity, bool>> condition, CancellationToken cancellationToken = default)
-            where TEntity : class;
-
-        /// <summary>
-        /// This method takes one or more <em>predicates</em> and returns the count in <see cref="long"/> type.
-        /// </summary>
-        /// <typeparam name="TEntity">The type of the entity.</typeparam>
-        /// <param name="conditions">The conditions based on which count will be done.</param>
-        /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
-        /// <returns>Retuns <see cref="Task"/> of <see cref="long"/>.</returns>
-        Task<long> GetLongCountAsync<TEntity>(IEnumerable<Expression<Func<TEntity, bool>>> conditions, CancellationToken cancellationToken = default)
-            where TEntity : class;
-
+     
         // Context level members
 
         /// <summary>
