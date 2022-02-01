@@ -25,7 +25,7 @@ namespace Nitro.Infrastructure.Data
             _dbContext = dbContext;
         }
 
-        public IQueryable<T> Table<T>() where T : class => _dbContext.Set<T>();
+        public DbSet<T> Table<T>() where T : class => _dbContext.Set<T>();
  
 
         public Task<List<T>> GetListAsync<T>(bool cacheable = false,CancellationToken cancellationToken = default)

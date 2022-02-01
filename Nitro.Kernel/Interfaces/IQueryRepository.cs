@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Query;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Kernel.Extensions;
 using System.Data.Common;
 using System.Linq.Expressions;
@@ -15,7 +16,7 @@ namespace Nitro.Kernel.Interfaces
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns>Returns <see cref="IQueryable{T}"/>.</returns>
-        IQueryable<T> Table<T>() where T : class;
+        DbSet<T> Table<T>() where T : class;
 
         /// <summary>
         /// This method returns <see cref="List{T}"/> without any filter. Call only when you want to pull all the data from the source.
