@@ -1,6 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using EFCoreSecondLevelCacheInterceptor;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Storage;
+using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel.Interfaces;
 using System.Data;
 
@@ -8,12 +10,14 @@ namespace Nitro.Infrastructure.Data
 {
     internal class Repository : QueryRepository, IRepository
     {
+        private readonly IEFCacheServiceProvider _cacheService;
         private readonly ApplicationDbContext _dbContext;
 
-        public Repository(ApplicationDbContext dbContext)
+        public Repository(ApplicationDbContext dbContext, IEFCacheServiceProvider cacheService)
             : base(dbContext)
         {
             _dbContext = dbContext;
+            _cacheService = cacheService;
         }
 
         public async Task<IDbContextTransaction> BeginTransactionAsync(
@@ -48,6 +52,11 @@ namespace Nitro.Infrastructure.Data
 
             await _dbContext.Set<T>().AddRangeAsync(entities, cancellationToken).ConfigureAwait(false);
             await _dbContext.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        }
+        public async Task BulkInsertAsync<T>(IEnumerable<T> entities) 
+            where T : class
+        {
+            await _dbContext.BulkInsertAsync(entities, _cacheService);
         }
 
         public async Task UpdateAsync<T>(T entity, CancellationToken cancellationToken = default)
@@ -118,5 +127,6 @@ namespace Nitro.Infrastructure.Data
         {
             _dbContext.ChangeTracker.Clear();
         }
+
     }
 }

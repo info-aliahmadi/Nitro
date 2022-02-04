@@ -27,12 +27,12 @@ namespace Nitro.Infrastructure.Data
         }
 
         public DbSet<T> Table<T>() where T : class => _dbContext.Set<T>();
- 
 
-        public Task<List<T>> GetListAsync<T>(bool cacheable = false,CancellationToken cancellationToken = default)
+
+        public Task<List<T>> GetListAsync<T>(bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
-            return GetListAsync<T>(asNoTracking: false,cacheable: cacheable, cancellationToken);
+            return GetListAsync<T>(asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
 
         public Task<List<T>> GetListAsync<T>(bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -82,11 +82,11 @@ namespace Nitro.Infrastructure.Data
 
         public Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
-            bool cacheable = false, 
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
              where T : class
         {
-            return GetListAsync(condition,false, cacheable, cancellationToken);
+            return GetListAsync(condition, false, cacheable, cancellationToken);
         }
 
         public Task<List<T>> GetListAsync<T>(
@@ -103,7 +103,7 @@ namespace Nitro.Infrastructure.Data
             Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking,
-            bool cacheable =false,
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
              where T : class
         {
@@ -298,15 +298,15 @@ namespace Nitro.Infrastructure.Data
                 .ToPaginatedListAsync(specification.PageIndex, specification.PageSize, cancellationToken);
             return paginatedList;
         }
-        public Task<T> GetByIdAsync<T>(int id, bool cacheable=false, CancellationToken cancellationToken = default)
+        public Task<T> GetByIdAsync<T>(int id, bool cacheable = false, CancellationToken cancellationToken = default)
                   where T : BaseEntity<int>
         {
-            return GetByIdAsync<T>(id, asNoTracking:false, cacheable: cacheable, cancellationToken);
+            return GetByIdAsync<T>(id, asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
 
-        public Task<T> GetByIdAsync<T>(int id, 
+        public Task<T> GetByIdAsync<T>(int id,
             bool asNoTracking = false,
-            bool cacheable = false, 
+            bool cacheable = false,
             CancellationToken cancellationToken = default)
             where T : BaseEntity<int>
         {
@@ -320,7 +320,7 @@ namespace Nitro.Infrastructure.Data
             CancellationToken cancellationToken = default)
             where T : BaseEntity<int>
         {
-            return GetByIdAsync(id, includes, asNoTracking: false, cacheable:cacheable, cancellationToken);
+            return GetByIdAsync(id, includes, asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
 
         public async Task<T> GetByIdAsync<T>(
@@ -346,7 +346,7 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Cacheable();
             }
-            T? enity = await query.FirstOrDefaultAsync(x=>x.Id==id, cancellationToken).ConfigureAwait(false);
+            T? enity = await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
             if (enity == null)
             {
                 throw new ArgumentNullException(nameof(id));
@@ -367,7 +367,7 @@ namespace Nitro.Infrastructure.Data
             }
             IQueryable<T> query = _dbContext.Set<T>();
 
-            
+
             if (cacheable)
             {
                 query = query.Cacheable();

@@ -306,7 +306,6 @@ namespace Nitro.Kernel.Interfaces
             where TEntity : BaseEntity<int>;
 
 
-
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the entity
         /// if found otherwise <see langword="null"/>.
@@ -374,9 +373,6 @@ namespace Nitro.Kernel.Interfaces
             bool cacheable = false,
             CancellationToken cancellationToken = default)
             where TEntity : BaseEntity<long>;
-
-
-
 
         /// <summary>
         /// This method takes <paramref name="id"/> which is the primary key value of the entity and returns the entity
@@ -653,7 +649,7 @@ namespace Nitro.Kernel.Interfaces
         Task<int> GetCountAsync<TEntity>(IEnumerable<Expression<Func<TEntity, bool>>> conditions, CancellationToken cancellationToken = default)
             where TEntity : class;
 
-     
+
         // Context level members
 
         /// <summary>

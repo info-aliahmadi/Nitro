@@ -41,6 +41,15 @@ namespace Nitro.Kernel.Interfaces
             where TEntity : class;
 
         /// <summary>
+        /// This method takes <typeparamref name="TEntity"/>, insert it into the database and returns <see cref="Task"/>.
+        /// </summary>
+        /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="entities">The entities to be inserted.</param>
+        /// <returns>Returns <see cref="Task"/>.</returns>
+        Task BulkInsertAsync<TEntity>(IEnumerable<TEntity> entities)
+            where TEntity : class;
+
+        /// <summary>
         /// This method takes <typeparamref name="TEntity"/>, send update operation to the database and returns <see cref="void"/>.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
@@ -109,5 +118,8 @@ namespace Nitro.Kernel.Interfaces
         /// Reset the DbContext state by removing all the tracked and attached entities.
         /// </summary>
         void ResetContextState();
+
+
+
     }
 }
