@@ -4,10 +4,11 @@
 
 using System.Data;
 using System.Data.Common;
-using System.Globalization;
+using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
 using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel;
@@ -297,59 +298,39 @@ namespace Nitro.Infrastructure.Data
                 .ToPaginatedListAsync(specification.PageIndex, specification.PageSize, cancellationToken);
             return paginatedList;
         }
-        public Task<T> GetByIdAsync<T>(object id, bool cacheable=false, CancellationToken cancellationToken = default)
-                  where T : BaseEntity<object>
+        public Task<T> GetByIdAsync<T>(int id, bool cacheable=false, CancellationToken cancellationToken = default)
+                  where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             return GetByIdAsync<T>(id, asNoTracking:false, cacheable: cacheable, cancellationToken);
         }
 
-        public Task<T> GetByIdAsync<T>(object id, 
+        public Task<T> GetByIdAsync<T>(int id, 
             bool asNoTracking = false,
             bool cacheable = false, 
             CancellationToken cancellationToken = default)
-            where T : BaseEntity<object>
+            where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
         }
 
         public Task<T> GetByIdAsync<T>(
-            object id,
+            int id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : BaseEntity<object>
+            where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             return GetByIdAsync(id, includes, asNoTracking: false, cacheable:cacheable, cancellationToken);
         }
 
         public async Task<T> GetByIdAsync<T>(
-            object id,
+            int id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking = false,
             bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : BaseEntity<object>
+            where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             IQueryable<T> query = _dbContext.Set<T>();
 
             if (includes != null)
@@ -365,8 +346,7 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Cacheable();
             }
-
-            T? enity = await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            T? enity = await query.FirstOrDefaultAsync(x=>x.Id==id, cancellationToken).ConfigureAwait(false);
             if (enity == null)
             {
                 throw new ArgumentNullException(nameof(id));
@@ -375,17 +355,12 @@ namespace Nitro.Infrastructure.Data
         }
 
         public async Task<TProjectedType> GetByIdAsync<T, TProjectedType>(
-            object id,
+            int id,
             Expression<Func<T, TProjectedType>> selectExpression,
             bool cacheable = false,
             CancellationToken cancellationToken = default)
-            where T : BaseEntity<object>
+            where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
-
             if (selectExpression == null)
             {
                 throw new ArgumentNullException(nameof(selectExpression));
@@ -405,6 +380,179 @@ namespace Nitro.Infrastructure.Data
             }
             return enity;
         }
+
+
+
+        public Task<T> GetByIdAsync<T>(long id, bool cacheable = false, CancellationToken cancellationToken = default)
+                  where T : BaseEntity<long>
+        {
+            return GetByIdAsync<T>(id, asNoTracking: false, cacheable: cacheable, cancellationToken);
+        }
+
+        public Task<T> GetByIdAsync<T>(long id,
+            bool asNoTracking = false,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<long>
+        {
+            return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
+        }
+
+        public Task<T> GetByIdAsync<T>(
+            long id,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<long>
+        {
+            return GetByIdAsync(id, includes, asNoTracking: false, cacheable: cacheable, cancellationToken);
+        }
+
+        public async Task<T> GetByIdAsync<T>(
+            long id,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool asNoTracking = false,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<long>
+        {
+            IQueryable<T> query = _dbContext.Set<T>();
+
+            if (includes != null)
+            {
+                query = includes(query);
+            }
+
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+            T? enity = await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return enity;
+        }
+
+        public async Task<TProjectedType> GetByIdAsync<T, TProjectedType>(
+            long id,
+            Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<long>
+        {
+            if (selectExpression == null)
+            {
+                throw new ArgumentNullException(nameof(selectExpression));
+            }
+            IQueryable<T> query = _dbContext.Set<T>();
+
+
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+            TProjectedType? enity = await query.Where(x => x.Id == id).Select(selectExpression)
+                .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return enity;
+        }
+
+
+
+
+
+        public Task<T> GetByIdAsync<T>(Guid id, bool cacheable = false, CancellationToken cancellationToken = default)
+                  where T : BaseEntity<Guid>
+        {
+            return GetByIdAsync<T>(id, asNoTracking: false, cacheable: cacheable, cancellationToken);
+        }
+
+        public Task<T> GetByIdAsync<T>(Guid id,
+            bool asNoTracking = false,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<Guid>
+        {
+            return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
+        }
+
+        public Task<T> GetByIdAsync<T>(
+            Guid id,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<Guid>
+        {
+            return GetByIdAsync(id, includes, asNoTracking: false, cacheable: cacheable, cancellationToken);
+        }
+
+        public async Task<T> GetByIdAsync<T>(
+            Guid id,
+            Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
+            bool asNoTracking = false,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<Guid>
+        {
+            IQueryable<T> query = _dbContext.Set<T>();
+
+            if (includes != null)
+            {
+                query = includes(query);
+            }
+
+            if (asNoTracking)
+            {
+                query = query.AsNoTracking();
+            }
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+            T? enity = await query.FirstOrDefaultAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return enity;
+        }
+
+        public async Task<TProjectedType> GetByIdAsync<T, TProjectedType>(
+            Guid id,
+            Expression<Func<T, TProjectedType>> selectExpression,
+            bool cacheable = false,
+            CancellationToken cancellationToken = default)
+            where T : BaseEntity<Guid>
+        {
+            if (selectExpression == null)
+            {
+                throw new ArgumentNullException(nameof(selectExpression));
+            }
+            IQueryable<T> query = _dbContext.Set<T>();
+
+
+            if (cacheable)
+            {
+                query = query.Cacheable();
+            }
+            TProjectedType? enity = await query.Where(x => x.Id == id).Select(selectExpression)
+                .FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            if (enity == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+            return enity;
+        }
+
 
         public Task<T> GetAsync<T>(
             Expression<Func<T, bool>> condition,
@@ -488,8 +636,8 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Cacheable();
             }
-
-            return await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            var result = await query.FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            return result;
         }
 
         public async Task<TProjectedType> GetAsync<T, TProjectedType>(
@@ -514,8 +662,8 @@ namespace Nitro.Infrastructure.Data
             {
                 query = query.Cacheable();
             }
-
-            return await query.Select(selectExpression).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            var result = await query.Select(selectExpression).FirstOrDefaultAsync(cancellationToken).ConfigureAwait(false);
+            return result;
         }
 
         public async Task<TProjectedType> GetAsync<T, TProjectedType>(
@@ -545,13 +693,13 @@ namespace Nitro.Infrastructure.Data
         }
 
         public Task<bool> ExistsAsync<T>(CancellationToken cancellationToken = default)
-           where T : BaseEntity<object>
+           where T : class
         {
             return ExistsAsync<T>(null, cancellationToken);
         }
 
         public async Task<bool> ExistsAsync<T>(Expression<Func<T, bool>> condition, CancellationToken cancellationToken = default)
-           where T : BaseEntity<object>
+           where T : class
         {
             IQueryable<T> query = _dbContext.Set<T>();
 
@@ -564,14 +712,27 @@ namespace Nitro.Infrastructure.Data
             return isExists;
         }
 
-        public async Task<bool> ExistsByIdAsync<T>(object id, CancellationToken cancellationToken = default)
-           where T : BaseEntity<object>
+        public async Task<bool> ExistsByIdAsync<T>(int id, CancellationToken cancellationToken = default)
+           where T : BaseEntity<int>
         {
-            if (id == null)
-            {
-                throw new ArgumentNullException(nameof(id));
-            }
+            IQueryable<T> query = _dbContext.Set<T>();
 
+            bool isExistent = await query.AnyAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            return isExistent;
+        }
+
+        public async Task<bool> ExistsByIdAsync<T>(long id, CancellationToken cancellationToken = default)
+           where T : BaseEntity<long>
+        {
+            IQueryable<T> query = _dbContext.Set<T>();
+
+            bool isExistent = await query.AnyAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
+            return isExistent;
+        }
+
+        public async Task<bool> ExistsByIdAsync<T>(Guid id, CancellationToken cancellationToken = default)
+           where T : BaseEntity<Guid>
+        {
             IQueryable<T> query = _dbContext.Set<T>();
 
             bool isExistent = await query.AnyAsync(x => x.Id == id, cancellationToken).ConfigureAwait(false);
