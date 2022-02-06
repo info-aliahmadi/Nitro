@@ -3,6 +3,7 @@
 services:
   cache:
    image: redis
+   container_name: redis
    restart: always
    ports:
      - '6379:6379'
@@ -23,7 +24,7 @@ services:
     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     - discovery.type=single-node
    networks:
-    - elastic
+    - elastic-network
 
   kibana:
    container_name: kibana
@@ -35,11 +36,51 @@ services:
    environment:
     - ELASTICSEARCH_URL=http://localhost:9200
    networks:
-    - elastic
-  
-networks:
-  elastic:
-    driver: bridge
+    - elastic-network
+
+  mongodb:
+   container_name: mongodb
+   image: mongo
+   volumes:
+      - mongodb-data:/data/db
+   restart: always
+   ports:
+    - 27017:27017
+   environment:
+    - MONGO_INITDB_ROOT_USERNAME=root
+    - MONGO_INITDB_ROOT_PASSWORD=pass12345
+   networks:
+    - mongodb_network
+
+  mongo-express:
+   container_name: mongo-express
+   image: mongo-express
+   restart: always
+   ports:
+      - 8081:8081
+   environment:
+    - ME_CONFIG_MONGODB_SERVER=mongodb
+    - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+    - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+    - ME_CONFIG_MONGODB_ADMINPASSWORD=pass12345
+    - ME_CONFIG_BASICAUTH_USERNAME=admin
+    - ME_CONFIG_BASICAUTH_PASSWORD=admin123
+   volumes:
+    - mongodb-data:/data/db
+   depends_on:
+    - mongodb
+   networks:
+    - mongodb_network
 
 volumes:
-  elasticsearch-log:
+ elasticsearch-log:
+ cache:
+ mongodb-data:
+  name: mongodb-data
+
+networks:
+  elastic-network:
+   driver: bridge
+  mongodb_network:
+   name: mongodb_network
+   driver: bridge
