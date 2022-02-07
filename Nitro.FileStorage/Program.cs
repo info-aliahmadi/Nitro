@@ -14,6 +14,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.Configure<FileStorageDatabaseSetting>(
     builder.Configuration.GetSection("FileStorageDatabase"));
 
+// Add services to the container.
+builder.Services.Configure<FileStorageSetting>(
+    builder.Configuration.GetSection("FileStorageSetting"));
+
 builder.Services.AddSingleton<FileStorageService>();
 
 var app = builder.Build();

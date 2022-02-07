@@ -40,13 +40,13 @@ namespace Nitro.FileStorage.Services
 
         public async Task RemoveAsync(string id) =>
             await _filesCollection.DeleteOneAsync(x => x.Id == id);
-        public async Task<ObjectId> Upload(string filename, Stream stream)
+        public async Task<ObjectId> Upload(string filename,string contentType, Stream stream)
         {
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
                 {
-                    {"ContentType","image/jpeg"}
+                    {"ContentType",contentType}
                 }
             };
             var id = await _imagesBucket.UploadFromStreamAsync(filename, stream, options);
