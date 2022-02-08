@@ -1,7 +1,10 @@
 using Nitro.FileStorage.Models;
 using Nitro.FileStorage.Services;
+using Nitro.FileStorage.Services.SignatureVerify;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<IConfiguration>(builder.Configuration);
 
 builder.Services.AddControllers();
 
@@ -11,14 +14,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add services to the container.
-builder.Services.Configure<FileStorageDatabaseSetting>(
+builder.Services.Configure<IFileStorageDatabaseSetting>(
     builder.Configuration.GetSection("FileStorageDatabase"));
 
 // Add services to the container.
-builder.Services.Configure<FileStorageSetting>(
-    builder.Configuration.GetSection("FileStorageSetting"));
+builder.Services.Configure<IUploadFileSetting>(
+    builder.Configuration.GetSection("UploadFileSetting"));
 
-builder.Services.AddSingleton<FileStorageService>();
+builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddSingleton<IFileTypeVerifier, FileTypeVerifier>();
 
 var app = builder.Build();
 
