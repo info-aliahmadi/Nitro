@@ -95,6 +95,23 @@ namespace Nitro.FileStorage.Services
 
             return ValidationFileEnum.Ok;
         }
+
+        public async Task<GridFSFileInfo> GetFileInfo(ObjectId objectId)
+        {
+            var filter = Builders<GridFSFileInfo>.Filter.And(Builders<GridFSFileInfo>.Filter.Eq(x => x.Id, objectId));
+
+            var cursor = await _imagesBucket.FindAsync(filter);
+
+            var result = (await cursor.ToListAsync()).FirstOrDefault();
+
+            if (result == null)
+            {
+                throw new Exception("File Not Found");
+            }
+
+            return result;
+        }
+
         public async Task<ObjectId> UploadFromBytesAsync(string filename, string contentType, byte[] bytes)
         {
             var options = new GridFSUploadOptions
@@ -122,19 +139,17 @@ namespace Nitro.FileStorage.Services
 
         public async Task<FileDownloadByteModel> DownloadAsync(ObjectId objectId)
         {
-            var file = await _imagesBucket.DownloadAsBytesAsync(objectId);
+            var result = new FileDownloadByteModel();
 
-            var fileInfo = _imagesBucket.Find(new FilterDefinition()
-            {
-                
-            });
+            result.FileInfo = await GetFileInfo(objectId);
 
-            return file;
+            result.FileBytes = await _imagesBucket.DownloadAsBytesAsync(objectId);
+
+            return result;
         }
-        public async Task<Stream> DownloadToStreamAsync(ObjectId objectId, Stream destination)
+        public async void  DownloadToStreamAsync(ObjectId objectId, Stream destination)
         {
             await _imagesBucket.DownloadToStreamAsync(objectId, destination);
-            return destination;
         }
     }
 }
