@@ -47,18 +47,36 @@ namespace Nitro.Web.Controllers
                 var filename = Path.GetFileName(file.FileName);
                 var contentType = file.ContentType;
 
-                var objectId = _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
-
-                return Ok(objectId.ToString());
+                var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
+                var fileUploadResult = new FileUploadResultModel() { ObjectId = objectId, FileName = filename };
+                return Ok(fileUploadResult);
             }
-
         }
+
         [HttpPost]
         [Route(nameof(UploadMultipleFiles))]
-        public async Task<IActionResult> UploadMultipleFiles(IFormFile[] files)
+        public async Task<IActionResult> UploadMultipleFiles(IFormFileCollection files)
         {
+            var filesUploadResult = new List<FileUploadResultModel>();
+            foreach (var file in files)
+            {
+                var fileValidation = _fileStorageService.ValidateFile(file);
+                if (fileValidation != ValidationFileEnum.Ok)
+                {
+                    return GetValidationResult(fileValidation);
+                }
+                using (var memoryStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(memoryStream);
+                    var filename = Path.GetFileName(file.FileName);
+                    var contentType = file.ContentType;
 
-            return Ok("");
+                    var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
+                    filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId, FileName = filename });
+                    return Ok(objectId.ToString());
+                }
+            }
+            return Ok(filesUploadResult);
         }
 
         [HttpPost]
@@ -96,12 +114,18 @@ namespace Nitro.Web.Controllers
                     // Here, we just use the temporary folder and a random file name
 
                     // Get the temporary folder, and combine a random file name with it
-                    var fileName = Path.GetRandomFileName();
-                    var saveToPath = Path.Combine(Path.GetTempPath(), fileName);
+                    // var fileName = Path.GetRandomFileName();
+                    //var saveToPath = Path.Combine(Path.GetTempPath(), fileName);
+
+                    var fileName = section.AsFileSection()?.FileName;
+                    var contentType = section.ContentType;
+
 
                     using (var memoryStream = new MemoryStream())
                     {
                         await section.Body.CopyToAsync(memoryStream);
+
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, memoryStream);
                     }
 
                     return Ok();
@@ -109,37 +133,44 @@ namespace Nitro.Web.Controllers
 
                 section = await reader.ReadNextSectionAsync();
             }
-
             // If the code runs to this location, it means that no files have been saved
             return BadRequest("No files data in the request.");
-
         }
 
+
         [HttpGet]
-        [Route(nameof(DownloadFileStream))]
-        public async Task<FileStreamResult> DownloadFileStream(string objectId)
+        [Route(nameof(DownloadFile))]
+        public async Task<IActionResult> DownloadFile(string objectId)
         {
             var memoryStream = new MemoryStream();
             ObjectId parsedObjectId = new ObjectId(objectId);
-            var fileStream =await _fileStorageService.DownloadToStreamAsync(parsedObjectId, memoryStream);
-
-            return new FileStreamResult(fileStream, "application/octet-stream")
+            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId);
+            if (result.FileInfo == null)
             {
-                FileDownloadName = "FileDownloadName.jpg"
+                return BadRequest("file Not Found.");
+            }
+            return new FileContentResult(result.FileBytes, result.FileInfo.ContentType)
+            {
+                FileDownloadName = result.FileInfo.Filename
             };
-
         }
 
         [HttpGet]
         [Route(nameof(DownloadFileStream))]
-        public async Task<FileContentResult> DownloadFile(string objectId)
+        public async Task<IActionResult> DownloadFileStream(string objectId)
         {
-            var fileBytes = System.IO.File.ReadAllBytes(@"d:\file.mkv");
-            //(@"d:\file.mkv", FileMode.Open, FileAccess.Read);
+            var memoryStream = new MemoryStream();
+            ObjectId parsedObjectId = new ObjectId(objectId);
+            var result = await _fileStorageService.DownloadToStreamAsync(parsedObjectId, memoryStream);
 
-            return new FileContentResult(fileBytes, "application/octet-stream")
+            if (result.FileInfo == null)
             {
-                FileDownloadName = "FileDownloadName.jpg"
+                return BadRequest("file Not Found.");
+            }
+
+            return new FileStreamResult(memoryStream, "application/octet-stream")
+            {
+                FileDownloadName = result.FileInfo.Filename
             };
 
         }

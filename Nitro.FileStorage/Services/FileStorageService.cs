@@ -106,7 +106,7 @@ namespace Nitro.FileStorage.Services
 
             if (result == null)
             {
-                throw new Exception("File Not Found");
+                return new GridFSFileInfo(null);
             }
 
             return result;
@@ -137,9 +137,9 @@ namespace Nitro.FileStorage.Services
             return id;
         }
 
-        public async Task<FileDownloadByteModel> DownloadAsync(ObjectId objectId)
+        public async Task<FileDownloadByteModel> DownloadAsBytesAsync(ObjectId objectId)
         {
-            var result = new FileDownloadByteModel();
+            var result = new FileDownloadByteModel() { ObjectId = objectId };
 
             result.FileInfo = await GetFileInfo(objectId);
 
@@ -147,9 +147,16 @@ namespace Nitro.FileStorage.Services
 
             return result;
         }
-        public async void  DownloadToStreamAsync(ObjectId objectId, Stream destination)
+        public async Task<FileDownloadStreamModel>  DownloadToStreamAsync(ObjectId objectId, Stream destination)
         {
+            var result = new FileDownloadStreamModel() { ObjectId = objectId };
+
+            result.FileInfo = await GetFileInfo(objectId);
+
             await _imagesBucket.DownloadToStreamAsync(objectId, destination);
+
+            return result;
         }
+
     }
 }

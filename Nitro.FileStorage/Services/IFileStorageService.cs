@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using Nitro.FileStorage.Models;
 using Nitro.FileStorage.Settings;
 
 namespace Nitro.FileStorage.Services
@@ -11,9 +12,9 @@ namespace Nitro.FileStorage.Services
 
         Task<ObjectId> UploadFromStreamAsync(string filename, string contentType, Stream stream);
 
-        Task<byte[]> DownloadAsync(ObjectId objectId);
+        Task<FileDownloadByteModel> DownloadAsBytesAsync(ObjectId objectId);
 
-        Task<Stream> DownloadToStreamAsync(ObjectId objectId, Stream destination);
+        Task<FileDownloadStreamModel> DownloadToStreamAsync(ObjectId objectId, Stream destination);
 
 
     }
