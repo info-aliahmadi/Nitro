@@ -1,6 +1,6 @@
-using Nitro.FileStorage.Models;
+using Nitro.FileStorage.Infrastructure.Settings;
+using Nitro.FileStorage.Infrastructure.SignatureVerify;
 using Nitro.FileStorage.Services;
-using Nitro.FileStorage.Services.SignatureVerify;
 
 var builder = WebApplication.CreateBuilder(args);
 

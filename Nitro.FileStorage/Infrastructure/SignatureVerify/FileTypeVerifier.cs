@@ -1,9 +1,8 @@
-using Nitro.FileStorage.Services.SignatureVerify.FileTypes;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
-namespace Nitro.FileStorage.Services.SignatureVerify
+
+using Nitro.FileStorage.Infrastructure.SignatureVerify.FileTypes;
+
+namespace Nitro.FileStorage.Infrastructure.SignatureVerify
 {
     public class FileTypeVerifier : IFileTypeVerifier
     {
@@ -19,7 +18,7 @@ namespace Nitro.FileStorage.Services.SignatureVerify
         };
 
 
-        public FileTypeVerifyResult Verify(Stream file,string extension)
+        public FileTypeVerifyResult Verify(Stream file, string extension)
         {
             if (true)
             {

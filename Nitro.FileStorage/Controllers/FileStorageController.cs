@@ -2,9 +2,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using MongoDB.Bson;
+using Nitro.FileStorage.Infrastructure;
+using Nitro.FileStorage.Infrastructure.Settings;
 using Nitro.FileStorage.Models;
 using Nitro.FileStorage.Services;
-using Nitro.FileStorage.Settings;
 
 namespace Nitro.Web.Controllers
 {
@@ -65,10 +66,13 @@ namespace Nitro.Web.Controllers
                 {
                     return GetValidationResult(fileValidation);
                 }
+            }
+            foreach (var file in files)
+            {
                 using (var memoryStream = new MemoryStream())
                 {
                     await file.CopyToAsync(memoryStream);
-                    var filename = Path.GetFileName(file.FileName);
+                    var filename = Path.GetRandomFileName();
                     var contentType = file.ContentType;
 
                     var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
@@ -80,6 +84,10 @@ namespace Nitro.Web.Controllers
         }
 
         [HttpPost]
+        [DisableFormValueModelBinding]
+        [GenerateAntiforgeryTokenCookie]
+        [RequestSizeLimit(1000000)]
+        [RequestFormLimits(MultipartBodyLengthLimit = 1000000)]
         [Route(nameof(UploadLargeFile))]
         public async Task<IActionResult> UploadLargeFile()
         {
@@ -97,6 +105,8 @@ namespace Nitro.Web.Controllers
 
             var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
             var section = await reader.ReadNextSectionAsync();
+
+            var fileName = Path.GetRandomFileName();
 
             // This sample try to get the first file from request and save it
             // Make changes according to your needs in actual use
@@ -117,7 +127,6 @@ namespace Nitro.Web.Controllers
                     // var fileName = Path.GetRandomFileName();
                     //var saveToPath = Path.Combine(Path.GetTempPath(), fileName);
 
-                    var fileName = section.AsFileSection()?.FileName;
                     var contentType = section.ContentType;
 
 
@@ -125,7 +134,6 @@ namespace Nitro.Web.Controllers
                     {
                         await section.Body.CopyToAsync(memoryStream);
 
-                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, memoryStream);
                     }
 
                     return Ok();

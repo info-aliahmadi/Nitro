@@ -1,13 +1,13 @@
 
-namespace Nitro.FileStorage.Services.SignatureVerify.FileTypes
+namespace Nitro.FileStorage.Infrastructure.SignatureVerify.FileTypes
 {
-    public sealed class Tif : FileType
+    public sealed class Tiff : FileType
     {
-        public Tif()
+        public Tiff()
         {
-            Name = "TIF";
-            Description = "Tif IMAGE";
-            AddExtensions("tif");
+            Name = "TIFF";
+            Description = "Tiff IMAGE";
+            AddExtensions("tiff");
             AddSignatures(
                 new byte[] { 0x49, 0x20, 0x49 },
                 new byte[] { 0x49, 0x49, 0x2A, 0x00 },

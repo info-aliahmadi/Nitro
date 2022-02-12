@@ -1,4 +1,4 @@
-﻿namespace Nitro.FileStorage.Models
+﻿namespace Nitro.FileStorage.Infrastructure.Settings
 {
     public interface IUploadFileSetting
     {

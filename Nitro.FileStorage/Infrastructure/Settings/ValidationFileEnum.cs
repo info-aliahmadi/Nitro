@@ -1,4 +1,4 @@
-﻿namespace Nitro.FileStorage.Settings
+﻿namespace Nitro.FileStorage.Infrastructure.Settings
 {
     public enum ValidationFileEnum
     {

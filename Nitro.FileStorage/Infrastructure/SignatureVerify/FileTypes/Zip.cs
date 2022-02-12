@@ -1,5 +1,6 @@
 
-namespace Nitro.FileStorage.Services.SignatureVerify.FileTypes
+
+namespace Nitro.FileStorage.Infrastructure.SignatureVerify.FileTypes
 {
     public sealed class Zip : FileType
     {

@@ -1,6 +1,6 @@
 ﻿using MongoDB.Bson;
+using Nitro.FileStorage.Infrastructure.Settings;
 using Nitro.FileStorage.Models;
-using Nitro.FileStorage.Settings;
 
 namespace Nitro.FileStorage.Services
 {
