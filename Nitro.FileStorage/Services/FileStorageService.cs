@@ -10,29 +10,31 @@ namespace Nitro.FileStorage.Services
 {
     public class FileStorageService : IFileStorageService
     {
+        private readonly IFileStorageDatabaseSetting _fileStorageDatabaseSetting;
         private readonly IFileTypeVerifier _fileTypeVerifier;
         private readonly IUploadFileSetting _fileStorageSetting;
         public GridFSBucket _imagesBucket { get; set; }
 
         public FileStorageService(
-            IOptions<IFileStorageDatabaseSetting> fileStorageDatabaseSetting,
+            IFileStorageDatabaseSetting fileStorageDatabaseSetting,
             IUploadFileSetting fileStorageSetting,
             IFileTypeVerifier fileTypeVerifier)
         {
+            _fileStorageDatabaseSetting = fileStorageDatabaseSetting;
             _fileStorageSetting = fileStorageSetting;
             _fileTypeVerifier = fileTypeVerifier;
 
             var mongoClient = new MongoClient(
-                fileStorageDatabaseSetting.Value.ConnectionString);
+                fileStorageDatabaseSetting.ConnectionString);
 
             var mongoDatabase = mongoClient.GetDatabase(
-                fileStorageDatabaseSetting.Value.DatabaseName);
+                fileStorageDatabaseSetting.DatabaseName);
 
             _imagesBucket = new GridFSBucket(mongoDatabase);
         }
 
 
-        public ValidationFileEnum ValidateFile(IFormFile file, string fileSize = "small")
+        public ValidationFileEnum ValidateFile(Stream file, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
         {
             if (file == null)
             {
@@ -40,7 +42,7 @@ namespace Nitro.FileStorage.Services
                 return ValidationFileEnum.FileNotFound;
 
             }
-            if (fileSize == "small")
+            if (fileSize == FileSizeEnum.Small)
             {
                 var fileLength = file.Length;
                 if (fileLength > _fileStorageSetting.MaxSizeLimitSmallFile)
@@ -55,7 +57,7 @@ namespace Nitro.FileStorage.Services
                 }
 
             }
-            else if (fileSize == "large")
+            else if (fileSize == FileSizeEnum.Large)
             {
                 var fileLength = file.Length;
                 if (fileLength > _fileStorageSetting.MaxSizeLimitLargeFile)
@@ -70,7 +72,7 @@ namespace Nitro.FileStorage.Services
                 }
             }
 
-            var fileExtension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var fileExtension = Path.GetExtension(fileName).ToLowerInvariant();
 
             var whiteListExtensions = _fileStorageSetting.WhiteListExtensions.Split(",");
             if (!whiteListExtensions.Contains(fileExtension))
@@ -85,7 +87,7 @@ namespace Nitro.FileStorage.Services
             {
                 // we will see how we can protect the integrity of our file uploads by
                 // verifying the files are what the user says they are
-                var verifySignature = _fileTypeVerifier.Verify(file.OpenReadStream(), fileExtension);
+                var verifySignature = _fileTypeVerifier.Verify(file, fileExtension);
                 if (!verifySignature.IsVerified)
                 {
                     return ValidationFileEnum.InvalidSignature;
@@ -100,7 +102,7 @@ namespace Nitro.FileStorage.Services
         {
             var filter = Builders<GridFSFileInfo>.Filter.And(Builders<GridFSFileInfo>.Filter.Eq(x => x.Id, objectId));
 
-            var cursor = await _imagesBucket.FindAsync(filter);
+            var cursor = await _imagesBucket.FindAsync(new BsonDocument { { "_id", objectId } });
 
             var result = (await cursor.ToListAsync()).FirstOrDefault();
 
@@ -122,7 +124,12 @@ namespace Nitro.FileStorage.Services
                     {"UntrustedFileName",filename}
                 }
             };
-            var id = await _imagesBucket.UploadFromBytesAsync(filename, bytes, options);
+            // Don't trust any file name, file extension, and file data from the request unless you trust them completely
+            // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
+            // In short, it is necessary to restrict and verify the upload
+            // Here, we just use the temporary folder and a random file name
+            var newFileName = Path.GetRandomFileName();
+            var id = await _imagesBucket.UploadFromBytesAsync(newFileName, bytes, options);
             return id;
         }
         public async Task<ObjectId> UploadFromStreamAsync(string filename, string contentType, Stream stream)
@@ -135,17 +142,23 @@ namespace Nitro.FileStorage.Services
                     {"UntrustedFileName",filename}
                 }
             };
-            var id = await _imagesBucket.UploadFromStreamAsync(filename, stream, options);
+            // Don't trust any file name, file extension, and file data from the request unless you trust them completely
+            // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
+            // In short, it is necessary to restrict and verify the upload
+            // Here, we just use the temporary folder and a random file name
+            var newFileName = Path.GetRandomFileName();
+            var id = await _imagesBucket.UploadFromStreamAsync(newFileName, stream, options);
             return id;
         }
 
         public async Task<FileDownloadByteModel> DownloadAsBytesAsync(ObjectId objectId)
         {
-            var result = new FileDownloadByteModel() { ObjectId = objectId };
+            var result = new FileDownloadByteModel() { 
+                ObjectId = objectId,
+                FileInfo = await GetFileInfo(objectId),
+                FileBytes = await _imagesBucket.DownloadAsBytesAsync(objectId)
 
-            result.FileInfo = await GetFileInfo(objectId);
-
-            result.FileBytes = await _imagesBucket.DownloadAsBytesAsync(objectId);
+            };
 
             return result;
         }

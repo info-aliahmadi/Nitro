@@ -39,14 +39,56 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
             FileType fileType;
             switch (extension)
             {
-                case "jpg":
-                    fileType = new Jpeg();
+                case ".jpg":
+                    fileType = new Jpg();
                     return fileType;
-                case "png":
+                case ".png":
                     fileType = new Png();
                     return fileType;
-                case "jpeg":
+                case ".jpeg":
                     fileType = new Jpeg();
+                    return fileType;
+                case ".bmp":
+                    fileType = new Bmp();
+                    return fileType;
+                case ".doc":
+                    fileType = new Doc();
+                    return fileType;
+                case ".docx":
+                    fileType = new Docx();
+                    return fileType;
+                case ".gif":
+                    fileType = new Gif();
+                    return fileType;
+                case ".mp3":
+                    fileType = new Mp3();
+                    return fileType;
+                case ".pdf":
+                    fileType = new Pdf();
+                    return fileType;
+                case ".txt":
+                    fileType = new Txt();
+                    return fileType;
+                case ".rar":
+                    fileType = new Rar();
+                    return fileType;
+                case ".tif":
+                    fileType = new Tif();
+                    return fileType;
+                case ".tiff":
+                    fileType = new Tiff();
+                    return fileType;
+                case ".xls":
+                    fileType = new Xls();
+                    return fileType;
+                case ".xlsx":
+                    fileType = new Xlsx();
+                    return fileType;
+                case ".xml":
+                    fileType = new Xml();
+                    return fileType;
+                case ".zip":
+                    fileType = new Zip();
                     return fileType;
                 default:
                     break;

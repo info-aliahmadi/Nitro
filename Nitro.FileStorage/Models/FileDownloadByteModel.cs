@@ -8,8 +8,8 @@ namespace Nitro.FileStorage.Models
     public class FileDownloadByteModel
     {
         public ObjectId ObjectId { get; set; }
-        public byte[] FileBytes { get; set; } = null!;
-        public GridFSFileInfo FileInfo { get; set; } = null!;
+        public byte[] FileBytes { get; set; }
+        public GridFSFileInfo FileInfo { get; set; }
     }
 
 }

@@ -22,10 +22,11 @@ namespace Nitro.Web.Controllers
         private readonly IUploadFileSetting _fileStorageSetting;
         private readonly IFileStorageService _fileStorageService;
         private readonly ILogger<FileStorageController> _logger;
+        const int maxSmallFile = 0;
 
         public FileStorageController(
             IUploadFileSetting fileStorageSetting,
-            ILogger<FileStorageController> logger, 
+            ILogger<FileStorageController> logger,
             IFileStorageService fileStorageService)
         {
             _fileStorageSetting = fileStorageSetting;
@@ -34,13 +35,22 @@ namespace Nitro.Web.Controllers
         }
 
         [HttpPost]
+        [DisableFormValueModelBinding]
+        //[GenerateAntiforgeryTokenCookie]
+        [RequestSizeLimit(134217728)]
         [Route(nameof(UploadFile))]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            var fileValidation = _fileStorageService.ValidateFile(file);
+            var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), file.FileName);
             if (fileValidation != ValidationFileEnum.Ok)
             {
-                return GetValidationResult(fileValidation);
+                return Ok(new FileUploadResultModel()
+                {
+                    ObjectId = null,
+                    FileName = file.FileName,
+                    IsSuccessful = false,
+                    ErrorMessage = GetValidationResult(fileValidation)
+                });
             }
             using (var memoryStream = new MemoryStream())
             {
@@ -49,26 +59,35 @@ namespace Nitro.Web.Controllers
                 var contentType = file.ContentType;
 
                 var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
-                var fileUploadResult = new FileUploadResultModel() { ObjectId = objectId, FileName = filename };
+                var fileUploadResult = new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true };
                 return Ok(fileUploadResult);
             }
         }
 
         [HttpPost]
+        [DisableFormValueModelBinding]
+        //[GenerateAntiforgeryTokenCookie]
+        [RequestSizeLimit(int.MaxValue)]
         [Route(nameof(UploadMultipleFiles))]
         public async Task<IActionResult> UploadMultipleFiles(IFormFileCollection files)
         {
             var filesUploadResult = new List<FileUploadResultModel>();
+
             foreach (var file in files)
             {
-                var fileValidation = _fileStorageService.ValidateFile(file);
+                var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), file.FileName);
                 if (fileValidation != ValidationFileEnum.Ok)
                 {
-                    return GetValidationResult(fileValidation);
+                    filesUploadResult.Add(new FileUploadResultModel()
+                    {
+                        ObjectId = null,
+                        FileName = file.FileName,
+                        IsSuccessful = false,
+                        ErrorMessage = GetValidationResult(fileValidation)
+                    });
+                    continue;
                 }
-            }
-            foreach (var file in files)
-            {
+
                 using (var memoryStream = new MemoryStream())
                 {
                     await file.CopyToAsync(memoryStream);
@@ -76,8 +95,7 @@ namespace Nitro.Web.Controllers
                     var contentType = file.ContentType;
 
                     var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
-                    filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId, FileName = filename });
-                    return Ok(objectId.ToString());
+                    filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true });
                 }
             }
             return Ok(filesUploadResult);
@@ -85,64 +103,119 @@ namespace Nitro.Web.Controllers
 
         [HttpPost]
         [DisableFormValueModelBinding]
-        [GenerateAntiforgeryTokenCookie]
-        [RequestSizeLimit(1000000)]
-        [RequestFormLimits(MultipartBodyLengthLimit = 1000000)]
+        //[GenerateAntiforgeryTokenCookie]
+        [RequestSizeLimit(int.MaxValue)]
         [Route(nameof(UploadLargeFile))]
         public async Task<IActionResult> UploadLargeFile()
         {
-            var request = HttpContext.Request;
-
-            // validation of Content-Type
-            // 1. first, it must be a form-data request
-            // 2. a MediaType should be found in the Content-Type
-            if (!request.HasFormContentType ||
-                !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader) ||
-                string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+            try
             {
-                return new UnsupportedMediaTypeResult();
-            }
-
-            var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
-            var section = await reader.ReadNextSectionAsync();
-
-            var fileName = Path.GetRandomFileName();
-
-            // This sample try to get the first file from request and save it
-            // Make changes according to your needs in actual use
-            while (section != null)
-            {
-                var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition,
-                    out var contentDisposition);
-
-                if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
-                    !string.IsNullOrEmpty(contentDisposition.FileName.Value))
+                var request = HttpContext.Request;
+                // validation of Content-Type
+                // 1. first, it must be a form-data request
+                // 2. a MediaType should be found in the Content-Type
+                if (!request.HasFormContentType ||
+                    !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader) ||
+                    string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
                 {
-                    // Don't trust any file name, file extension, and file data from the request unless you trust them completely
-                    // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
-                    // In short, it is necessary to restrict and verify the upload
-                    // Here, we just use the temporary folder and a random file name
-
-                    // Get the temporary folder, and combine a random file name with it
-                    // var fileName = Path.GetRandomFileName();
-                    //var saveToPath = Path.Combine(Path.GetTempPath(), fileName);
-
-                    var contentType = section.ContentType;
+                    return new UnsupportedMediaTypeResult();
+                }
 
 
-                    using (var memoryStream = new MemoryStream())
+                var contentType = request.ContentType;
+                var fileName = Path.GetFileName(request.Form.Files[0].FileName);
+
+                var fileValidation = _fileStorageService.ValidateFile(request.Body, fileName, FileSizeEnum.Large);
+                if (fileValidation != ValidationFileEnum.Ok)
+                {
+                    return Ok(new FileUploadResultModel()
                     {
-                        await section.Body.CopyToAsync(memoryStream);
+                        ObjectId = null,
+                        FileName = fileName,
+                        IsSuccessful = false,
+                        ErrorMessage = GetValidationResult(fileValidation)
+                    });
+                }
+
+                var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, request.Body);
+                return Ok(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName });
+            }
+            catch (Exception)
+            {
+                return BadRequest("No files data in the request.");
+            }
+        }
+
+        [HttpPost]
+        [DisableFormValueModelBinding]
+        //[GenerateAntiforgeryTokenCookie]
+        [RequestSizeLimit(int.MaxValue)]
+        [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
+        [Route(nameof(UploadMultipleLargeFiles))]
+        public async Task<IActionResult> UploadMultipleLargeFiles()
+        {
+            try
+            {
+                var filesUploadResult = new List<FileUploadResultModel>();
+                var request = HttpContext.Request;
+
+                // validation of Content-Type
+                // 1. first, it must be a form-data request
+                // 2. a MediaType should be found in the Content-Type
+                if (!request.HasFormContentType ||
+                    !MediaTypeHeaderValue.TryParse(request.ContentType, out var mediaTypeHeader) ||
+                    string.IsNullOrEmpty(mediaTypeHeader.Boundary.Value))
+                {
+                    return new UnsupportedMediaTypeResult();
+                }
+
+                var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
+                var section = await reader.ReadNextSectionAsync();
+
+                // This sample try to get the first file from request and save it
+                // Make changes according to your needs in actual use
+                while (section != null)
+                {
+                    var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition,
+                        out var contentDisposition);
+
+                    if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
+                        !string.IsNullOrEmpty(contentDisposition.FileName.Value))
+                    {
+                        var contentType = section.ContentType;
+                        var fileSection = section.AsFileSection();
+
+                        var fileName = Path.GetFileName(fileSection.FileName);
+
+                        var fileValidation = _fileStorageService.ValidateFile(section.Body, fileName, FileSizeEnum.Large);
+                        if (fileValidation != ValidationFileEnum.Ok)
+                        {
+                            filesUploadResult.Add(new FileUploadResultModel()
+                            {
+                                ObjectId = null,
+                                FileName = fileName,
+                                IsSuccessful = false,
+                                ErrorMessage = GetValidationResult(fileValidation)
+                            });
+
+                            section = await reader.ReadNextSectionAsync();
+                            continue;
+                        }
+
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileSection.FileName, contentType, section.Body);
+                        filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName, IsSuccessful = true });
 
                     }
 
-                    return Ok();
+                    section = await reader.ReadNextSectionAsync();
                 }
-
-                section = await reader.ReadNextSectionAsync();
+                return Ok(filesUploadResult);
             }
-            // If the code runs to this location, it means that no files have been saved
-            return BadRequest("No files data in the request.");
+            catch (Exception)
+            {
+                // If the code runs to this location, it means that no files have been saved
+                return BadRequest("No files data in the request.");
+            }
         }
 
 
@@ -150,16 +223,18 @@ namespace Nitro.Web.Controllers
         [Route(nameof(DownloadFile))]
         public async Task<IActionResult> DownloadFile(string objectId)
         {
-            var memoryStream = new MemoryStream();
             ObjectId parsedObjectId = new ObjectId(objectId);
             var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId);
             if (result.FileInfo == null)
             {
                 return BadRequest("file Not Found.");
             }
-            return new FileContentResult(result.FileBytes, result.FileInfo.ContentType)
+            var metadata = result.FileInfo.Metadata;
+            var contentType = metadata.GetElement("ContentType").Value.ToString();
+            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            return new FileContentResult(result.FileBytes, contentType)
             {
-                FileDownloadName = result.FileInfo.Filename
+                FileDownloadName = fileName
             };
         }
 
@@ -175,40 +250,43 @@ namespace Nitro.Web.Controllers
             {
                 return BadRequest("file Not Found.");
             }
+            var metadata = result.FileInfo.Metadata;
+            var contentType = metadata.GetElement("ContentType").Value.ToString();
+            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
 
             return new FileStreamResult(memoryStream, "application/octet-stream")
             {
-                FileDownloadName = result.FileInfo.Filename
+                FileDownloadName = fileName
             };
 
         }
 
-        private IActionResult GetValidationResult(ValidationFileEnum validationFileEnum)
+        private string GetValidationResult(ValidationFileEnum validationFileEnum)
         {
             switch (validationFileEnum)
             {
                 case ValidationFileEnum.FileNotFound:
                     // If the code runs to this location, it means that no files have been saved
-                    return BadRequest("No files data in the request.");
+                    return "No files data in the request.";
 
                 case ValidationFileEnum.FileIsTooLarge:
                     // If the code runs to this location, it means that no files have been saved
-                    return BadRequest("The file is too large.");
+                    return "The file is too large.";
 
                 case ValidationFileEnum.FileIsTooSmall:
                     // If the code runs to this location, it means that no files have been saved
-                    return BadRequest("The file is too small.");
+                    return "The file is too small.";
 
                 case ValidationFileEnum.FileNotSupported:
                     // If the code runs to this location, it means that no files have been saved
-                    return BadRequest("The file is not suppot.");
+                    return "The file is not supported.";
 
                 case ValidationFileEnum.InvalidSignature:
                     // If the code runs to this location, it means that no files have been saved
-                    return BadRequest("The file extension is not trusted.");
+                    return "The file extension is not trusted.";
 
                 default:
-                    return Ok();
+                    return "";
             }
         }
 

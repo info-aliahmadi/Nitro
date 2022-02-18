@@ -14,15 +14,19 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Add services to the container.
-builder.Services.Configure<IFileStorageDatabaseSetting>(
-    builder.Configuration.GetSection("FileStorageDatabase"));
+builder.Services.AddSingleton<IFileStorageDatabaseSetting>((serviceProvider) =>
+{
+    return builder.Configuration.GetSection("FileStorageDatabase").Get<FileStorageDatabaseSetting>();
+});
 
 // Add services to the container.
-builder.Services.Configure<IUploadFileSetting>(
-    builder.Configuration.GetSection("UploadFileSetting"));
+builder.Services.AddSingleton<IUploadFileSetting>((serviceProvider) =>
+{
+    return builder.Configuration.GetSection("UploadFileSetting").Get<UploadFileSetting>();
+});
 
-builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 builder.Services.AddSingleton<IFileTypeVerifier, FileTypeVerifier>();
+builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
 
 var app = builder.Build();
 

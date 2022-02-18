@@ -2,15 +2,15 @@
 {
     public interface IUploadFileSetting
     {
-        public string WhiteListExtensions { get; set; }
-        public string SignatureValidationExtensions { get; set; }
+        string WhiteListExtensions { get; set; } 
+        string SignatureValidationExtensions { get; set; }
 
-        public long MaxSizeLimitSmallFile { get; set; }
+        long MaxSizeLimitSmallFile { get; set; }
 
-        public long MinSizeLimitSmallFile { get; set; }
+        long MinSizeLimitSmallFile { get; set; }
 
-        public long MaxSizeLimitLargeFile { get; set; }
+        long MaxSizeLimitLargeFile { get; set; }
 
-        public long MinSizeLimitLargeFile { get; set; }
+        long MinSizeLimitLargeFile { get; set; }
     }
 }
