@@ -118,7 +118,8 @@ namespace Nitro.FileStorage.Services
             {
                 Metadata = new BsonDocument
                 {
-                    {"ContentType",contentType}
+                    {"ContentType",contentType},
+                    {"UntrustedFileName",filename}
                 }
             };
             var id = await _imagesBucket.UploadFromBytesAsync(filename, bytes, options);
@@ -130,7 +131,8 @@ namespace Nitro.FileStorage.Services
             {
                 Metadata = new BsonDocument
                 {
-                    {"ContentType",contentType}
+                    {"ContentType",contentType},
+                    {"UntrustedFileName",filename}
                 }
             };
             var id = await _imagesBucket.UploadFromStreamAsync(filename, stream, options);
