@@ -6,6 +6,8 @@ namespace Nitro.FileStorage.Services
 {
     public interface IFileStorageService
     {
+        ValidationFileEnum ValidateFile(byte[] file, long length, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small);
+
         ValidationFileEnum ValidateFile(Stream file, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small);
 
         Task<ObjectId> UploadFromBytesAsync(string filename, string contentType, byte[] bytes);

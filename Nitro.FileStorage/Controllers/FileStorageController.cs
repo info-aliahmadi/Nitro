@@ -37,17 +37,19 @@ namespace Nitro.Web.Controllers
         [HttpPost]
         [DisableFormValueModelBinding]
         //[GenerateAntiforgeryTokenCookie]
-        [RequestSizeLimit(134217728)]
+        [RequestSizeLimit(int.MaxValue)]
+        [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadFile))]
         public async Task<IActionResult> UploadFile(IFormFile file)
         {
-            var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), file.FileName);
+            var filename = file.FileName;
+            var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), filename);
             if (fileValidation != ValidationFileEnum.Ok)
             {
                 return Ok(new FileUploadResultModel()
                 {
                     ObjectId = null,
-                    FileName = file.FileName,
+                    FileName = filename,
                     IsSuccessful = false,
                     ErrorMessage = GetValidationResult(fileValidation)
                 });
@@ -55,7 +57,6 @@ namespace Nitro.Web.Controllers
             using (var memoryStream = new MemoryStream())
             {
                 await file.CopyToAsync(memoryStream);
-                var filename = Path.GetFileName(file.FileName);
                 var contentType = file.ContentType;
 
                 var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
@@ -68,6 +69,7 @@ namespace Nitro.Web.Controllers
         [DisableFormValueModelBinding]
         //[GenerateAntiforgeryTokenCookie]
         [RequestSizeLimit(int.MaxValue)]
+        [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadMultipleFiles))]
         public async Task<IActionResult> UploadMultipleFiles(IFormFileCollection files)
         {
@@ -75,13 +77,14 @@ namespace Nitro.Web.Controllers
 
             foreach (var file in files)
             {
-                var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), file.FileName);
+                var filename = file.FileName;
+                var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), filename);
                 if (fileValidation != ValidationFileEnum.Ok)
                 {
                     filesUploadResult.Add(new FileUploadResultModel()
                     {
                         ObjectId = null,
-                        FileName = file.FileName,
+                        FileName = filename,
                         IsSuccessful = false,
                         ErrorMessage = GetValidationResult(fileValidation)
                     });
@@ -91,9 +94,7 @@ namespace Nitro.Web.Controllers
                 using (var memoryStream = new MemoryStream())
                 {
                     await file.CopyToAsync(memoryStream);
-                    var filename = Path.GetRandomFileName();
                     var contentType = file.ContentType;
-
                     var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
                     filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true });
                 }
@@ -105,6 +106,7 @@ namespace Nitro.Web.Controllers
         [DisableFormValueModelBinding]
         //[GenerateAntiforgeryTokenCookie]
         [RequestSizeLimit(int.MaxValue)]
+        [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadLargeFile))]
         public async Task<IActionResult> UploadLargeFile()
         {
@@ -121,24 +123,50 @@ namespace Nitro.Web.Controllers
                     return new UnsupportedMediaTypeResult();
                 }
 
-
-                var contentType = request.ContentType;
-                var fileName = Path.GetFileName(request.Form.Files[0].FileName);
-
-                var fileValidation = _fileStorageService.ValidateFile(request.Body, fileName, FileSizeEnum.Large);
-                if (fileValidation != ValidationFileEnum.Ok)
+                var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
+                var section = await reader.ReadNextSectionAsync();
+                if (section != null)
                 {
-                    return Ok(new FileUploadResultModel()
-                    {
-                        ObjectId = null,
-                        FileName = fileName,
-                        IsSuccessful = false,
-                        ErrorMessage = GetValidationResult(fileValidation)
-                    });
-                }
+                    var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition,
+                       out var contentDisposition);
 
-                var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, request.Body);
-                return Ok(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName });
+                    if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
+                        !string.IsNullOrEmpty(contentDisposition.FileName.Value))
+                    {
+                        var fileSection = section.AsFileSection();
+                        var contentType = section.ContentType;
+                        var fileName = Path.GetFileName(fileSection.FileName);
+
+                        const int chunkSize = 1024;
+                        var buffer = new byte[chunkSize];
+                        var bytesRead = 0;
+                        await fileSection.FileStream.ReadAsync(buffer);
+                        
+                        //var reader2 = section.Body.CopyToAsync(stream);
+
+
+
+                        var fileValidation = _fileStorageService.ValidateFile(buffer, request.ContentLength ?? 0,
+                            fileName, FileSizeEnum.Large);
+                        if (fileValidation != ValidationFileEnum.Ok)
+                        {
+                            return Ok(new FileUploadResultModel()
+                            {
+                                ObjectId = null,
+                                FileName = fileName,
+                                IsSuccessful = false,
+                                ErrorMessage = GetValidationResult(fileValidation)
+                            });
+
+                        }
+
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body);
+
+                        return Ok(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName ,IsSuccessful = true});
+                    }
+                }
+                return BadRequest("No files data in the request.");
+
             }
             catch (Exception)
             {
@@ -182,8 +210,8 @@ namespace Nitro.Web.Controllers
                     if (hasContentDispositionHeader && contentDisposition.DispositionType.Equals("form-data") &&
                         !string.IsNullOrEmpty(contentDisposition.FileName.Value))
                     {
-                        var contentType = section.ContentType;
                         var fileSection = section.AsFileSection();
+                        var contentType = section.ContentType;
 
                         var fileName = Path.GetFileName(fileSection.FileName);
 
@@ -202,7 +230,7 @@ namespace Nitro.Web.Controllers
                             continue;
                         }
 
-                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileSection.FileName, contentType, section.Body);
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body);
                         filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName, IsSuccessful = true });
 
                     }

@@ -18,12 +18,8 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
         };
 
 
-        public FileTypeVerifyResult Verify(Stream file, string extension)
+        public FileTypeVerifyResult Verify(byte[] file, string extension)
         {
-            if (true)
-            {
-
-            }
             FileType fileType = FileTypeClass(extension);
 
             var result = fileType.Verify(file);

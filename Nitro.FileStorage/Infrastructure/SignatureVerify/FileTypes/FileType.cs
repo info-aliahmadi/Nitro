@@ -27,11 +27,11 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify.FileTypes
             return this;
         }
 
-        public FileTypeVerifyResult Verify(Stream stream)
+        public FileTypeVerifyResult Verify(byte[] headerBytes)
         {
-            stream.Position = 0;
-            var reader = new BinaryReader(stream);
-            var headerBytes = reader.ReadBytes(SignatureLength);
+            //stream.Position = 0;
+            //var reader = new BinaryReader(stream);
+            //var headerBytes = file.ReadBytes(SignatureLength);
 
             return new FileTypeVerifyResult
             {

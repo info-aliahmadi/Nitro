@@ -33,6 +33,68 @@ namespace Nitro.FileStorage.Services
             _imagesBucket = new GridFSBucket(mongoDatabase);
         }
 
+        public ValidationFileEnum ValidateFile(byte[] file, long length, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
+        {
+            if (file.Length == 0)
+            {
+                // If the code runs to this location, it means that no files have been saved
+                return ValidationFileEnum.FileNotFound;
+
+            }
+            if (fileSize == FileSizeEnum.Small)
+            {
+                if (length > _fileStorageSetting.MaxSizeLimitSmallFile)
+                {
+                    // If the code runs to this location, it means that no files have been saved
+                    return ValidationFileEnum.FileIsTooLarge;
+                }
+                if (length < _fileStorageSetting.MinSizeLimitSmallFile)
+                {
+                    // If the code runs to this location, it means that no files have been saved
+                    return ValidationFileEnum.FileIsTooSmall;
+                }
+
+            }
+            else if (fileSize == FileSizeEnum.Large)
+            {
+                if (length > _fileStorageSetting.MaxSizeLimitLargeFile)
+                {
+                    // If the code runs to this location, it means that no files have been saved
+                    return ValidationFileEnum.FileIsTooLarge;
+                }
+                if (length < _fileStorageSetting.MinSizeLimitLargeFile)
+                {
+                    // If the code runs to this location, it means that no files have been saved
+                    return ValidationFileEnum.FileIsTooSmall;
+                }
+            }
+
+            var fileExtension = Path.GetExtension(fileName).ToLowerInvariant();
+
+            var whiteListExtensions = _fileStorageSetting.WhiteListExtensions.Split(",");
+            if (!whiteListExtensions.Contains(fileExtension))
+            {
+                // If the code runs to this location, it means that no files have been saved
+                return ValidationFileEnum.FileNotSupported;
+            }
+
+            var signatureValidationExtensions = _fileStorageSetting.SignatureValidationExtensions.Split(",");
+
+            if (signatureValidationExtensions.Contains(fileExtension))
+            {
+                // we will see how we can protect the integrity of our file uploads by
+                // verifying the files are what the user says they are
+                var verifySignature = _fileTypeVerifier.Verify(file, fileExtension);
+                if (!verifySignature.IsVerified)
+                {
+                    return ValidationFileEnum.InvalidSignature;
+                }
+            }
+
+
+            return ValidationFileEnum.Ok;
+        }
+
 
         public ValidationFileEnum ValidateFile(Stream file, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
         {
@@ -87,11 +149,11 @@ namespace Nitro.FileStorage.Services
             {
                 // we will see how we can protect the integrity of our file uploads by
                 // verifying the files are what the user says they are
-                var verifySignature = _fileTypeVerifier.Verify(file, fileExtension);
-                if (!verifySignature.IsVerified)
-                {
-                    return ValidationFileEnum.InvalidSignature;
-                }
+                //var verifySignature = _fileTypeVerifier.Verify(file, fileExtension);
+                //if (!verifySignature.IsVerified)
+                //{
+                //    return ValidationFileEnum.InvalidSignature;
+                //}
             }
 
 
