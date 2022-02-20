@@ -10,17 +10,15 @@ namespace Nitro.FileStorage.Services
 {
     public class FileStorageService : IFileStorageService
     {
-        private readonly IFileStorageDatabaseSetting _fileStorageDatabaseSetting;
         private readonly IFileTypeVerifier _fileTypeVerifier;
         private readonly IUploadFileSetting _fileStorageSetting;
-        public GridFSBucket _imagesBucket { get; set; }
+        public GridFSBucket ImagesBucket { get; set; }
 
         public FileStorageService(
             IFileStorageDatabaseSetting fileStorageDatabaseSetting,
             IUploadFileSetting fileStorageSetting,
             IFileTypeVerifier fileTypeVerifier)
         {
-            _fileStorageDatabaseSetting = fileStorageDatabaseSetting;
             _fileStorageSetting = fileStorageSetting;
             _fileTypeVerifier = fileTypeVerifier;
 
@@ -30,12 +28,24 @@ namespace Nitro.FileStorage.Services
             var mongoDatabase = mongoClient.GetDatabase(
                 fileStorageDatabaseSetting.DatabaseName);
 
-            _imagesBucket = new GridFSBucket(mongoDatabase);
+            ImagesBucket = new GridFSBucket(mongoDatabase);
         }
 
-        public ValidationFileEnum ValidateFile(byte[] file, long length, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
+        public async Task<long> GetLengthOfStream(Stream file)
         {
-            if (file.Length == 0)
+            long length = 0;
+            byte[] buffer = new byte[2048]; // read in chunks of 2KB
+            while (await file.ReadAsync(buffer, 0, buffer.Length) > 0)
+            {
+                length += buffer.Length;
+            }
+
+            return length;
+        }
+
+        public ValidationFileEnum ValidateFile(byte[] file, long length, string? fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
+        {
+            if (file.Length == 0 || fileName == null)
             {
                 // If the code runs to this location, it means that no files have been saved
                 return ValidationFileEnum.FileNotFound;
@@ -91,14 +101,12 @@ namespace Nitro.FileStorage.Services
                 }
             }
 
-
             return ValidationFileEnum.Ok;
         }
 
-
-        public ValidationFileEnum ValidateFile(Stream file, string fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
+        public ValidationFileEnum ValidateFile(Stream? file, string? fileName, FileSizeEnum fileSize = FileSizeEnum.Small)
         {
-            if (file == null)
+            if (file == null || fileName == null)
             {
                 // If the code runs to this location, it means that no files have been saved
                 return ValidationFileEnum.FileNotFound;
@@ -164,7 +172,7 @@ namespace Nitro.FileStorage.Services
         {
             var filter = Builders<GridFSFileInfo>.Filter.And(Builders<GridFSFileInfo>.Filter.Eq(x => x.Id, objectId));
 
-            var cursor = await _imagesBucket.FindAsync(new BsonDocument { { "_id", objectId } });
+            var cursor = await ImagesBucket.FindAsync(new BsonDocument { { "_id", objectId } });
 
             var result = (await cursor.ToListAsync()).FirstOrDefault();
 
@@ -176,14 +184,14 @@ namespace Nitro.FileStorage.Services
             return result;
         }
 
-        public async Task<ObjectId> UploadFromBytesAsync(string filename, string contentType, byte[] bytes)
+        public async Task<ObjectId> UploadFromBytesAsync(string? filename, string? contentType, byte[] bytes, CancellationToken cancellationToken = default)
         {
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
                 {
-                    {"ContentType",contentType},
-                    {"UntrustedFileName",filename}
+                    {"ContentType", contentType},
+                    {"UntrustedFileName", filename}
                 }
             };
             // Don't trust any file name, file extension, and file data from the request unless you trust them completely
@@ -191,17 +199,17 @@ namespace Nitro.FileStorage.Services
             // In short, it is necessary to restrict and verify the upload
             // Here, we just use the temporary folder and a random file name
             var newFileName = Path.GetRandomFileName();
-            var id = await _imagesBucket.UploadFromBytesAsync(newFileName, bytes, options);
+            var id = await ImagesBucket.UploadFromBytesAsync(newFileName, bytes, options, cancellationToken);
             return id;
         }
-        public async Task<ObjectId> UploadFromStreamAsync(string filename, string contentType, Stream stream)
+        public async Task<ObjectId> UploadFromStreamAsync(string? filename, string? contentType, Stream stream, CancellationToken cancellationToken = default)
         {
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
                 {
-                    {"ContentType",contentType},
-                    {"UntrustedFileName",filename}
+                    {"ContentType", contentType},
+                    {"UntrustedFileName", filename}
                 }
             };
             // Don't trust any file name, file extension, and file data from the request unless you trust them completely
@@ -209,28 +217,32 @@ namespace Nitro.FileStorage.Services
             // In short, it is necessary to restrict and verify the upload
             // Here, we just use the temporary folder and a random file name
             var newFileName = Path.GetRandomFileName();
-            var id = await _imagesBucket.UploadFromStreamAsync(newFileName, stream, options);
+
+            //NetworkStream Stream = stream;
+
+
+            var id = await ImagesBucket.UploadFromStreamAsync(newFileName, stream, options, cancellationToken);
             return id;
         }
 
-        public async Task<FileDownloadByteModel> DownloadAsBytesAsync(ObjectId objectId)
+        public async Task<FileDownloadByteModel> DownloadAsBytesAsync(ObjectId objectId, CancellationToken cancellationToken = default)
         {
             var result = new FileDownloadByteModel() { 
                 ObjectId = objectId,
                 FileInfo = await GetFileInfo(objectId),
-                FileBytes = await _imagesBucket.DownloadAsBytesAsync(objectId)
+                FileBytes = await ImagesBucket.DownloadAsBytesAsync(objectId,null, cancellationToken)
 
             };
 
             return result;
         }
-        public async Task<FileDownloadStreamModel>  DownloadToStreamAsync(ObjectId objectId, Stream destination)
+        public async Task<FileDownloadStreamModel>  DownloadToStreamAsync(ObjectId objectId, Stream destination, CancellationToken cancellationToken = default)
         {
             var result = new FileDownloadStreamModel() { ObjectId = objectId };
 
             result.FileInfo = await GetFileInfo(objectId);
 
-            await _imagesBucket.DownloadToStreamAsync(objectId, destination);
+            await ImagesBucket.DownloadToStreamAsync(objectId, destination,null,cancellationToken);
 
             return result;
         }

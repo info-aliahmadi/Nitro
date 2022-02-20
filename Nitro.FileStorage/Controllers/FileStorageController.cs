@@ -40,7 +40,7 @@ namespace Nitro.Web.Controllers
         [RequestSizeLimit(int.MaxValue)]
         [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadFile))]
-        public async Task<IActionResult> UploadFile(IFormFile file)
+        public async Task<IActionResult> UploadFile(IFormFile file, CancellationToken cancellationToken)
         {
             var filename = file.FileName;
             var fileValidation = _fileStorageService.ValidateFile(file.OpenReadStream(), filename);
@@ -59,7 +59,7 @@ namespace Nitro.Web.Controllers
                 await file.CopyToAsync(memoryStream);
                 var contentType = file.ContentType;
 
-                var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
+                var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream, cancellationToken);
                 var fileUploadResult = new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true };
                 return Ok(fileUploadResult);
             }
@@ -71,7 +71,7 @@ namespace Nitro.Web.Controllers
         [RequestSizeLimit(int.MaxValue)]
         [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadMultipleFiles))]
-        public async Task<IActionResult> UploadMultipleFiles(IFormFileCollection files)
+        public async Task<IActionResult> UploadMultipleFiles(IFormFileCollection files, CancellationToken cancellationToken)
         {
             var filesUploadResult = new List<FileUploadResultModel>();
 
@@ -95,7 +95,7 @@ namespace Nitro.Web.Controllers
                 {
                     await file.CopyToAsync(memoryStream);
                     var contentType = file.ContentType;
-                    var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream);
+                    var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType, memoryStream, cancellationToken);
                     filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true });
                 }
             }
@@ -108,7 +108,7 @@ namespace Nitro.Web.Controllers
         [RequestSizeLimit(int.MaxValue)]
         [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadLargeFile))]
-        public async Task<IActionResult> UploadLargeFile()
+        public async Task<IActionResult> UploadLargeFile(CancellationToken cancellationToken)
         {
             try
             {
@@ -137,16 +137,11 @@ namespace Nitro.Web.Controllers
                         var contentType = section.ContentType;
                         var fileName = Path.GetFileName(fileSection.FileName);
 
-                        const int chunkSize = 1024;
-                        var buffer = new byte[chunkSize];
-                        var bytesRead = 0;
-                        await fileSection.FileStream.ReadAsync(buffer);
+                        const int chunkSize = 64;
+                        var instanceBuffer = new byte[chunkSize];
+                        await fileSection.FileStream.ReadAsync(instanceBuffer);
                         
-                        //var reader2 = section.Body.CopyToAsync(stream);
-
-
-
-                        var fileValidation = _fileStorageService.ValidateFile(buffer, request.ContentLength ?? 0,
+                        var fileValidation = _fileStorageService.ValidateFile(instanceBuffer, request.ContentLength ?? 0,
                             fileName, FileSizeEnum.Large);
                         if (fileValidation != ValidationFileEnum.Ok)
                         {
@@ -160,7 +155,7 @@ namespace Nitro.Web.Controllers
 
                         }
 
-                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body);
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body, cancellationToken);
 
                         return Ok(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName ,IsSuccessful = true});
                     }
@@ -180,7 +175,7 @@ namespace Nitro.Web.Controllers
         [RequestSizeLimit(int.MaxValue)]
         [RequestFormLimits(MultipartBodyLengthLimit = int.MaxValue)]
         [Route(nameof(UploadMultipleLargeFiles))]
-        public async Task<IActionResult> UploadMultipleLargeFiles()
+        public async Task<IActionResult> UploadMultipleLargeFiles(CancellationToken cancellationToken)
         {
             try
             {
@@ -198,7 +193,7 @@ namespace Nitro.Web.Controllers
                 }
 
                 var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
-                var section = await reader.ReadNextSectionAsync();
+                var section = await reader.ReadNextSectionAsync(cancellationToken);
 
                 // This sample try to get the first file from request and save it
                 // Make changes according to your needs in actual use
@@ -211,11 +206,29 @@ namespace Nitro.Web.Controllers
                         !string.IsNullOrEmpty(contentDisposition.FileName.Value))
                     {
                         var fileSection = section.AsFileSection();
-                        var contentType = section.ContentType;
+                        if (fileSection == null)
+                        {
+                            filesUploadResult.Add(new FileUploadResultModel()
+                            {
+                                ObjectId = null,
+                                FileName = "Unknown",
+                                IsSuccessful = false,
+                                ErrorMessage = "Unknown content"
+                            });
+
+                            section = await reader.ReadNextSectionAsync(cancellationToken);
+                            continue;
+                        }
+                        var contentType = section.ContentType ?? string.Empty;
 
                         var fileName = Path.GetFileName(fileSection.FileName);
 
-                        var fileValidation = _fileStorageService.ValidateFile(section.Body, fileName, FileSizeEnum.Large);
+                        const int chunkSize = 64;
+                        var instanceBuffer = new byte[chunkSize];
+                        _ = await fileSection.FileStream.ReadAsync(instanceBuffer, cancellationToken);
+                        var contentLength = await _fileStorageService.GetLengthOfStream(section.Body);
+
+                        var fileValidation = _fileStorageService.ValidateFile(instanceBuffer, contentLength, fileName, FileSizeEnum.Large);
                         if (fileValidation != ValidationFileEnum.Ok)
                         {
                             filesUploadResult.Add(new FileUploadResultModel()
@@ -226,16 +239,16 @@ namespace Nitro.Web.Controllers
                                 ErrorMessage = GetValidationResult(fileValidation)
                             });
 
-                            section = await reader.ReadNextSectionAsync();
+                            section = await reader.ReadNextSectionAsync(cancellationToken);
                             continue;
                         }
 
-                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body);
+                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType, section.Body, cancellationToken);
                         filesUploadResult.Add(new FileUploadResultModel() { ObjectId = objectId.ToString(), FileName = fileName, IsSuccessful = true });
 
                     }
 
-                    section = await reader.ReadNextSectionAsync();
+                    section = await reader.ReadNextSectionAsync(cancellationToken);
                 }
                 return Ok(filesUploadResult);
             }
