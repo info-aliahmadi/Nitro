@@ -17,12 +17,19 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
             IsVerified = false
         };
 
+        private async Task<byte[]> GetFirstBytes(Stream file)
+        {
+            const int chunkSize = 64;
+            var instanceBuffer = new byte[chunkSize];
+            await file.ReadAsync(instanceBuffer);
+            return instanceBuffer;
+        }
 
-        public FileTypeVerifyResult Verify(byte[] file, string extension)
+        public async Task<FileTypeVerifyResult> VerifyAsync(Stream file, string extension)
         {
             FileType fileType = FileTypeClass(extension);
-
-            var result = fileType.Verify(file);
+            var bytes = await GetFirstBytes(file);
+            var result = fileType.Verify(bytes);
 
             return result?.IsVerified == true
                    ? result

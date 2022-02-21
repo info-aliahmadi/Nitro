@@ -6,6 +6,6 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
 {
     public interface IFileTypeVerifier
     {
-        FileTypeVerifyResult Verify(byte[] file, string extension);
+        Task<FileTypeVerifyResult> VerifyAsync(Stream file, string extension);
     }
 }
