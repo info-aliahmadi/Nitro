@@ -135,20 +135,20 @@ namespace Nitro.Web.Controllers
                 var contentType = section.ContentType;
                 var fileName = Path.GetFileName(fileSection?.FileName);
 
-                var fileValidation =
-                    await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
-                        cancellationToken);
-                if (fileValidation != ValidationFileEnum.Ok)
-                {
-                    return Ok(new FileUploadResultModel()
-                    {
-                        ObjectId = null,
-                        FileName = fileName,
-                        IsSuccessful = false,
-                        ErrorMessage = GetValidationResult(fileValidation)
-                    });
+                ////var fileValidation =
+                ////    await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
+                ////        cancellationToken);
+                ////if (fileValidation != ValidationFileEnum.Ok)
+                ////{
+                ////    return Ok(new FileUploadResultModel()
+                ////    {
+                ////        ObjectId = null,
+                ////        FileName = fileName,
+                ////        IsSuccessful = false,
+                ////        ErrorMessage = GetValidationResult(fileValidation)
+                ////    });
 
-                }
+                ////}
 
                 var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
                     section.Body, cancellationToken);

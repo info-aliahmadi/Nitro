@@ -29,6 +29,7 @@ namespace Nitro.FileStorage.Services
                 fileStorageDatabaseSetting.DatabaseName);
 
             ImagesBucket = new GridFSBucket(mongoDatabase);
+           
         }
 
         public async Task<long> GetLengthOfStream(Stream file, CancellationToken cancellationToken = default)
@@ -190,8 +191,12 @@ namespace Nitro.FileStorage.Services
             {
                 return null;
             }
-
-            var bytes = await ImagesBucket.DownloadAsBytesAsync(fileInfo.Id, null, cancellationToken);
+            var options = new GridFSDownloadOptions
+            {
+                Seekable = true
+            };
+            var option = new GridFSFindOptions() { AllowDiskUse = true };
+            var bytes = await ImagesBucket.DownloadAsBytesAsync(fileInfo.Id, options, cancellationToken);
 
             var result = new FileDownloadByteModel()
             {
