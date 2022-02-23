@@ -22,6 +22,7 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
             const int chunkSize = 64;
             var instanceBuffer = new byte[chunkSize];
             await file.ReadAsync(instanceBuffer);
+            file.Position = 0;
             return instanceBuffer;
         }
 

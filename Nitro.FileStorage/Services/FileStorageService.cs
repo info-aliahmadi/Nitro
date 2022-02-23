@@ -24,12 +24,22 @@ namespace Nitro.FileStorage.Services
 
             var mongoClient = new MongoClient(
                 fileStorageDatabaseSetting.ConnectionString);
-
+            
             var mongoDatabase = mongoClient.GetDatabase(
                 fileStorageDatabaseSetting.DatabaseName);
 
-            ImagesBucket = new GridFSBucket(mongoDatabase);
-           
+           // mongoDatabase.AggregateToCollection(PipelineDefinition<null,>.Create(),new AggregateOptions(){AllowDiskUse = true});
+
+           ImagesBucket = new GridFSBucket(mongoDatabase
+               , new GridFSBucketOptions
+               {
+                   BucketName = "Nitro",
+               //    ChunkSizeBytes = 1048576, // 1MB
+               //    WriteConcern = WriteConcern.WMajority,
+               //    ReadPreference = ReadPreference.Secondary
+               }
+           );
+
         }
 
         public async Task<long> GetLengthOfStream(Stream file, CancellationToken cancellationToken = default)
@@ -193,9 +203,9 @@ namespace Nitro.FileStorage.Services
             }
             var options = new GridFSDownloadOptions
             {
-                Seekable = true
+                Seekable = true,
+                
             };
-            var option = new GridFSFindOptions() { AllowDiskUse = true };
             var bytes = await ImagesBucket.DownloadAsBytesAsync(fileInfo.Id, options, cancellationToken);
 
             var result = new FileDownloadByteModel()

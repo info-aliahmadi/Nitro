@@ -135,20 +135,20 @@ namespace Nitro.Web.Controllers
                 var contentType = section.ContentType;
                 var fileName = Path.GetFileName(fileSection?.FileName);
 
-                ////var fileValidation =
-                ////    await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
-                ////        cancellationToken);
-                ////if (fileValidation != ValidationFileEnum.Ok)
-                ////{
-                ////    return Ok(new FileUploadResultModel()
-                ////    {
-                ////        ObjectId = null,
-                ////        FileName = fileName,
-                ////        IsSuccessful = false,
-                ////        ErrorMessage = GetValidationResult(fileValidation)
-                ////    });
+                var fileValidation =
+                    await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
+                        cancellationToken);
+                if (fileValidation != ValidationFileEnum.Ok)
+                {
+                    return Ok(new FileUploadResultModel()
+                    {
+                        ObjectId = null,
+                        FileName = fileName,
+                        IsSuccessful = false,
+                        ErrorMessage = GetValidationResult(fileValidation)
+                    });
 
-                ////}
+                }
 
                 var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
                     section.Body, cancellationToken);
@@ -257,7 +257,7 @@ namespace Nitro.Web.Controllers
 
         [HttpGet]
         [Route(nameof(DownloadFile))]
-        public async Task<IActionResult> DownloadFile(string objectId)
+        public async Task<IActionResult> DownloadFile(string objectId, CancellationToken cancellationToken)
         {
             var parsedObjectId = new ObjectId(objectId);
             var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId);
@@ -277,12 +277,12 @@ namespace Nitro.Web.Controllers
 
         [HttpGet]
         [Route(nameof(DownloadFileStream))]
-        public async Task<IActionResult> DownloadFileStream(string objectId)
+        public async Task<IActionResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
         {
-            await using var stream = new MemoryStream();
+            Stream stream;
 
             var parsedObjectId = new ObjectId(objectId);
-            var result = await _fileStorageService.DownloadToStreamAsync(parsedObjectId, stream);
+            var result = await _fileStorageService.DownloadToStreamAsync(parsedObjectId, stream,cancellationToken);
 
             if (result == null)
             {
