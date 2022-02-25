@@ -17,19 +17,17 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
             IsVerified = false
         };
 
-        private async Task<byte[]> GetFirstBytes(Stream file)
+        private byte[] GetFirstBytes(byte[] file)
         {
             const int chunkSize = 64;
-            var instanceBuffer = new byte[chunkSize];
-            await file.ReadAsync(instanceBuffer);
-            file.Position = 0;
+            var instanceBuffer = file.Take(chunkSize).ToArray();
             return instanceBuffer;
         }
 
-        public async Task<FileTypeVerifyResult> VerifyAsync(Stream file, string extension)
+        public async Task<FileTypeVerifyResult> VerifyAsync(byte[] file, string extension)
         {
             FileType fileType = FileTypeClass(extension);
-            var bytes = await GetFirstBytes(file);
+            var bytes = GetFirstBytes(file);
             var result = fileType.Verify(bytes);
 
             return result?.IsVerified == true
@@ -66,6 +64,9 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
                     return fileType;
                 case ".mp3":
                     fileType = new Mp3();
+                    return fileType;
+                case ".mp4":
+                    fileType = new Mp4();
                     return fileType;
                 case ".pdf":
                     fileType = new Pdf();

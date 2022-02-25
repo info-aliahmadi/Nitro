@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Nitro.FileStorage.Models
 {
-    public class FileDownloadByteModel
+    public class FileDownloadModel
     {
         public ObjectId ObjectId { get; set; }
         public byte[] FileBytes { get; set; } = null!;

@@ -6,18 +6,17 @@ namespace Nitro.FileStorage.Services
 {
     public interface IFileStorageService
     {
-        Task<long> GetLengthOfStream(Stream file, CancellationToken cancellationToken = default);
-        Task<long> GetLengthOfStreamWithLimitation(Stream file, long lengthLimit,
-            CancellationToken cancellationToken = default);
-        Task<ValidationFileEnum> ValidateFileAsync(Stream file, string? fileName, FileSizeEnum fileSize = FileSizeEnum.Small, CancellationToken cancellationToken = default);
+        Task<ValidationFileEnum> ValidateFileAsync(byte[] file, string? fileName, long? lengthOfFile = null, FileSizeEnum fileSize = FileSizeEnum.Small, CancellationToken cancellationToken = default);
 
-        Task<ObjectId> UploadFromBytesAsync(string? filename, string? contentType, byte[] bytes, CancellationToken cancellationToken = default);
+        string GetValidationMessage(ValidationFileEnum validationFileEnum);
 
-        Task<ObjectId> UploadFromStreamAsync(string? filename, string? contentType, Stream stream, CancellationToken cancellationToken = default);
+        Task<FileUploadResultModel> UploadFromBytesAsync(string? filename, string? contentType, byte[] bytes, CancellationToken cancellationToken = default);
 
-        Task<FileDownloadByteModel?> DownloadAsBytesAsync(ObjectId objectId, CancellationToken cancellationToken = default);
+        Task<FileUploadResultModel> UploadFromStreamAsync(string? filename, string? contentType, Stream stream, CancellationToken cancellationToken = default);
 
-        Task<FileDownloadStreamModel?> DownloadToStreamAsync(ObjectId objectId, Stream destination, CancellationToken cancellationToken = default);
+        Task<FileDownloadModel?> DownloadAsBytesAsync(ObjectId objectId, CancellationToken cancellationToken = default);
+
+        Task<FileDownloadModel?> DownloadToStreamAsync(ObjectId objectId, Stream destination, CancellationToken cancellationToken = default);
 
 
     }

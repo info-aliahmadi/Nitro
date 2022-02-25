@@ -34,27 +34,13 @@ namespace Nitro.Web.Controllers
         {
             var filename = file.FileName;
             var fileStream = file.OpenReadStream();
-            var fileValidation =
-                await _fileStorageService.ValidateFileAsync(fileStream, filename, FileSizeEnum.Small,
-                    cancellationToken);
-            if (fileValidation != ValidationFileEnum.Ok)
-            {
-                return Ok(new FileUploadResultModel()
-                {
-                    ObjectId = null,
-                    FileName = filename,
-                    IsSuccessful = false,
-                    ErrorMessage = GetValidationResult(fileValidation)
-                });
-            }
 
             var contentType = file.ContentType;
 
-            var objectId =
+            var result =
                 await _fileStorageService.UploadFromStreamAsync(filename, contentType, fileStream, cancellationToken);
-            var fileUploadResult = new FileUploadResultModel()
-                {ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true};
-            return Ok(fileUploadResult);
+
+            return Ok(result);
 
         }
 
@@ -72,26 +58,12 @@ namespace Nitro.Web.Controllers
             foreach (var file in files)
             {
                 var filename = file.FileName;
-                var fileValidation = await _fileStorageService.ValidateFileAsync(file.OpenReadStream(), filename,
-                    FileSizeEnum.Small, cancellationToken);
-                if (fileValidation != ValidationFileEnum.Ok)
-                {
-                    filesUploadResult.Add(new FileUploadResultModel()
-                    {
-                        ObjectId = null,
-                        FileName = filename,
-                        IsSuccessful = false,
-                        ErrorMessage = GetValidationResult(fileValidation)
-                    });
-                    continue;
-                }
 
                 var contentType = file.ContentType;
-                var objectId = await _fileStorageService.UploadFromStreamAsync(filename, contentType,
+                var result = await _fileStorageService.UploadFromStreamAsync(filename, contentType,
                     file.OpenReadStream(),
                     cancellationToken);
-                filesUploadResult.Add(new FileUploadResultModel()
-                    {ObjectId = objectId.ToString(), FileName = filename, IsSuccessful = true});
+                filesUploadResult.Add(result);
             }
 
             return Ok(filesUploadResult);
@@ -130,31 +102,26 @@ namespace Nitro.Web.Controllers
                     string.IsNullOrEmpty(contentDisposition.FileName.Value))
                     return BadRequest("No files data in the request.");
 
-
                 var fileSection = section.AsFileSection();
+                if (fileSection == null)
+                {
+                    var unknown = new FileUploadResultModel()
+                    {
+                        ObjectId = null,
+                        FileName = "Unknown",
+                        IsSuccessful = false,
+                        ErrorMessage = "Unknown content"
+                    };
+                    return Ok(unknown);
+
+                }
                 var contentType = section.ContentType;
                 var fileName = Path.GetFileName(fileSection?.FileName);
 
-                var fileValidation =
-                    await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
-                        cancellationToken);
-                if (fileValidation != ValidationFileEnum.Ok)
-                {
-                    return Ok(new FileUploadResultModel()
-                    {
-                        ObjectId = null,
-                        FileName = fileName,
-                        IsSuccessful = false,
-                        ErrorMessage = GetValidationResult(fileValidation)
-                    });
-
-                }
-
-                var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
+                var result = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
                     section.Body, cancellationToken);
 
-                return Ok(new FileUploadResultModel()
-                    {ObjectId = objectId.ToString(), FileName = fileName, IsSuccessful = true});
+                return Ok(result);
 
             }
             catch (Exception)
@@ -218,27 +185,9 @@ namespace Nitro.Web.Controllers
 
                         var fileName = Path.GetFileName(fileSection.FileName);
 
-                        var fileValidation =
-                            await _fileStorageService.ValidateFileAsync(section.Body, fileName, FileSizeEnum.Large,
-                                cancellationToken);
-                        if (fileValidation != ValidationFileEnum.Ok)
-                        {
-                            filesUploadResult.Add(new FileUploadResultModel()
-                            {
-                                ObjectId = null,
-                                FileName = fileName,
-                                IsSuccessful = false,
-                                ErrorMessage = GetValidationResult(fileValidation)
-                            });
-
-                            section = await reader.ReadNextSectionAsync(cancellationToken);
-                            continue;
-                        }
-
-                        var objectId = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
+                        var result = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
                             section.Body, cancellationToken);
-                        filesUploadResult.Add(new FileUploadResultModel()
-                            {ObjectId = objectId.ToString(), FileName = fileName, IsSuccessful = true});
+                        filesUploadResult.Add(result);
 
                     }
 
@@ -260,7 +209,7 @@ namespace Nitro.Web.Controllers
         public async Task<IActionResult> DownloadFile(string objectId, CancellationToken cancellationToken)
         {
             var parsedObjectId = new ObjectId(objectId);
-            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId);
+            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId,cancellationToken);
             if (result == null)
             {
                 return BadRequest("file Not Found.");
@@ -279,55 +228,27 @@ namespace Nitro.Web.Controllers
         [Route(nameof(DownloadFileStream))]
         public async Task<IActionResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
         {
-            Stream stream;
+            Stream stream = Stream.Null;
 
             var parsedObjectId = new ObjectId(objectId);
-            var result = await _fileStorageService.DownloadToStreamAsync(parsedObjectId, stream,cancellationToken);
+            await _fileStorageService.DownloadToStreamAsync(parsedObjectId, stream, cancellationToken);
+            
+            //await imageStream.CopyToAsync(stream, cancellationToken);
+            //if (result == null)
+            //{
+            //    return BadRequest("file Not Found.");
+            //}
 
-            if (result == null)
-            {
-                return BadRequest("file Not Found.");
-            }
-
-            var metadata = result.FileInfo.Metadata;
-            var contentType = metadata.GetElement("ContentType").Value.ToString();
-            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            //var metadata = result.FileInfo.Metadata;
+            //var contentType = metadata.GetElement("ContentType").Value.ToString();
+            //var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
 
             return new FileStreamResult(stream, "application/octet-stream")
             {
-                FileDownloadName = fileName
+                FileDownloadName = "fileName.mp4"
             };
         }
 
-        private static string GetValidationResult(ValidationFileEnum validationFileEnum)
-        {
-            switch (validationFileEnum)
-            {
-                case ValidationFileEnum.FileNotFound:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "No files data in the request.";
-
-                case ValidationFileEnum.FileIsTooLarge:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is too large.";
-
-                case ValidationFileEnum.FileIsTooSmall:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is too small.";
-
-                case ValidationFileEnum.FileNotSupported:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is not supported.";
-
-                case ValidationFileEnum.InvalidSignature:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file extension is not trusted.";
-
-                case ValidationFileEnum.Ok:
-                default:
-                    return "";
-            }
-        }
 
     }
 }
