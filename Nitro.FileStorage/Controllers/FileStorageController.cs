@@ -38,7 +38,7 @@ namespace Nitro.Web.Controllers
             var contentType = file.ContentType;
 
             var result =
-                await _fileStorageService.UploadFromStreamAsync(filename, contentType, fileStream, cancellationToken);
+                await _fileStorageService.UploadSmallFileFromStreamAsync(filename, contentType, fileStream, cancellationToken);
 
             return Ok(result);
 
@@ -60,7 +60,7 @@ namespace Nitro.Web.Controllers
                 var filename = file.FileName;
 
                 var contentType = file.ContentType;
-                var result = await _fileStorageService.UploadFromStreamAsync(filename, contentType,
+                var result = await _fileStorageService.UploadSmallFileFromStreamAsync(filename, contentType,
                     file.OpenReadStream(),
                     cancellationToken);
                 filesUploadResult.Add(result);
@@ -118,7 +118,7 @@ namespace Nitro.Web.Controllers
                 var contentType = section.ContentType;
                 var fileName = Path.GetFileName(fileSection?.FileName);
 
-                var result = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
+                var result = await _fileStorageService.UploadLargeFileFromStreamAsync(fileName, contentType,
                     section.Body, cancellationToken);
 
                 return Ok(result);
@@ -185,7 +185,7 @@ namespace Nitro.Web.Controllers
 
                         var fileName = Path.GetFileName(fileSection.FileName);
 
-                        var result = await _fileStorageService.UploadFromStreamAsync(fileName, contentType,
+                        var result = await _fileStorageService.UploadLargeFileFromStreamAsync(fileName, contentType,
                             section.Body, cancellationToken);
                         filesUploadResult.Add(result);
 

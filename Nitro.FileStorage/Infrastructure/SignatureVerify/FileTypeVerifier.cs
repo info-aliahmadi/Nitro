@@ -24,7 +24,7 @@ namespace Nitro.FileStorage.Infrastructure.SignatureVerify
             return instanceBuffer;
         }
 
-        public async Task<FileTypeVerifyResult> VerifyAsync(byte[] file, string extension)
+        public FileTypeVerifyResult Verify(byte[] file, string extension)
         {
             FileType fileType = FileTypeClass(extension);
             var bytes = GetFirstBytes(file);
