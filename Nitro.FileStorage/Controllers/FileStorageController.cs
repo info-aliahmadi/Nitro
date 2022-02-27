@@ -33,15 +33,12 @@ namespace Nitro.Web.Controllers
         public async Task<IActionResult> UploadFile(IFormFile file, CancellationToken cancellationToken)
         {
             var filename = file.FileName;
-            var fileStream = file.OpenReadStream();
-
             var contentType = file.ContentType;
-
+            var stream = file.OpenReadStream();
             var result =
-                await _fileStorageService.UploadSmallFileFromStreamAsync(filename, contentType, fileStream, cancellationToken);
-
+                await _fileStorageService.UploadSmallFileFromStreamAsync(filename, contentType, stream,
+                    cancellationToken);
             return Ok(result);
-
         }
 
         [HttpPost]
@@ -92,7 +89,7 @@ namespace Nitro.Web.Controllers
 
                 var reader = new MultipartReader(mediaTypeHeader.Boundary.Value, request.Body);
                 var section = await reader.ReadNextSectionAsync(cancellationToken);
-                if (section == null) 
+                if (section == null)
                     return BadRequest("No files data in the request.");
 
                 var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition,
@@ -115,6 +112,7 @@ namespace Nitro.Web.Controllers
                     return Ok(unknown);
 
                 }
+
                 var contentType = section.ContentType;
                 var fileName = Path.GetFileName(fileSection?.FileName);
 
@@ -209,46 +207,54 @@ namespace Nitro.Web.Controllers
         public async Task<IActionResult> DownloadFile(string objectId, CancellationToken cancellationToken)
         {
             var parsedObjectId = new ObjectId(objectId);
-            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId,cancellationToken);
+            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId, cancellationToken);
             if (result == null)
             {
                 return BadRequest("file Not Found.");
             }
 
+            string? contentType = null;
+            string? fileName = null;
             var metadata = result.FileInfo.Metadata;
-            var contentType = metadata.GetElement("ContentType").Value.ToString();
-            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            if (metadata != null)
+            {
+                contentType = metadata.GetElement("ContentType").Value.ToString();
+                fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            }
+
             return new FileContentResult(result.FileBytes, contentType ?? "application/octet-stream")
             {
-                FileDownloadName = fileName
+                FileDownloadName = fileName,
+                EnableRangeProcessing = true   // enable resume download ability
             };
         }
 
         [HttpGet]
         [Route(nameof(DownloadFileStream))]
-        public async Task<IActionResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
+        public async Task<FileResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
         {
-            Stream stream = Stream.Null;
+            Stream destination = Stream.Null;
 
+            //MemoryStream destination = new MemoryStream();
             var parsedObjectId = new ObjectId(objectId);
-            await _fileStorageService.DownloadToStreamAsync(parsedObjectId, stream, cancellationToken);
-            
-            //await imageStream.CopyToAsync(stream, cancellationToken);
-            //if (result == null)
-            //{
-            //    return BadRequest("file Not Found.");
-            //}
+            var result =
+                await _fileStorageService.DownloadToStreamAsync(parsedObjectId, destination, cancellationToken);
 
-            //var metadata = result.FileInfo.Metadata;
-            //var contentType = metadata.GetElement("ContentType").Value.ToString();
-            //var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
-
-            return new FileStreamResult(stream, "application/octet-stream")
+            destination.Seek(0, SeekOrigin.Begin);
+            if (result == null)
             {
-                FileDownloadName = "fileName.mp4"
+                return null;
+            }
+            var metadata = result.FileInfo.Metadata;
+            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            
+            return new FileStreamResult(destination, "application/octet-stream")
+            {
+                FileDownloadName = fileName,
+                EnableRangeProcessing = true   // enable resume download ability
             };
         }
-
+     
 
     }
 }

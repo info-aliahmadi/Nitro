@@ -18,6 +18,9 @@ namespace Nitro.FileStorage.Services
 
         string GetValidationMessage(ValidationFileEnum validationFileEnum);
 
+        Task<FileUploadResultModel> UploadFromBytesAsync(string? fileName, string? contentType, byte[] bytes,
+            CancellationToken cancellationToken = default);
+
         Task<FileUploadResultModel> UploadSmallFileFromStreamAsync(string? fileName, string? contentType, Stream stream,
             CancellationToken cancellationToken = default);
 

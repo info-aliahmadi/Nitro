@@ -226,8 +226,9 @@ namespace Nitro.FileStorage.Services
 
             var result = (await cursor.ToListAsync()).FirstOrDefault();
 
-            return null;
+            return result;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -236,9 +237,14 @@ namespace Nitro.FileStorage.Services
         /// <param name="bytes"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<FileUploadResultModel> UploadFromBytesAsync(string? fileName, string? contentType, byte[] bytes,
+        public async Task<FileUploadResultModel> UploadFromBytesAsync(string? fileName, string? contentType,
+            byte[] bytes,
             CancellationToken cancellationToken = default)
         {
+            var result = new FileUploadResultModel()
+            {
+                FileName = fileName
+            };
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
@@ -247,6 +253,15 @@ namespace Nitro.FileStorage.Services
                     {"UntrustedFileName", fileName}
                 }
             };
+            var firstBytes = bytes.Take(64).ToArray();
+            var validateResult = ValidateFile(firstBytes, fileName, bytes.Length, FileSizeEnum.Small);
+            if (validateResult != ValidationFileEnum.Ok)
+            {
+                result.IsSuccessful = false;
+                result.ErrorMessage = GetValidationMessage(validateResult);
+                return result;
+            }
+
             // Don't trust any file name, file extension, and file data from the request unless you trust them completely
             // Otherwise, it is very likely to cause problems such as virus uploading, disk filling, etc
             // In short, it is necessary to restrict and verify the upload
@@ -254,22 +269,20 @@ namespace Nitro.FileStorage.Services
             var newFileName = Path.GetRandomFileName();
             try
             {
-               var id= await ImagesBucket.UploadFromBytesAsync(newFileName, bytes, options, cancellationToken);
-                return new FileUploadResultModel()
-                {
-                    ObjectId = id.ToString(),
-                    FileName = fileName
-                };
+                var id = await ImagesBucket.UploadFromBytesAsync(newFileName, bytes, options, cancellationToken);
+
+                result.ObjectId = id.ToString();
+                return result;
+
             }
             catch (Exception e)
             {
-                return new FileUploadResultModel()
-                {
-                    IsSuccessful = false,
-                    ErrorMessage = e.Message + " " + e.InnerException
-                };
+                result.IsSuccessful = false;
+                result.ErrorMessage = e.Message + " " + e.InnerException;
+                return result;
             }
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -343,7 +356,7 @@ namespace Nitro.FileStorage.Services
             string newFileName,
             FileSizeEnum fileSize,
             Stream source,
-            GridFSUploadOptions options = null,
+            GridFSUploadOptions? options = null,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             Ensure.IsNotNull<string>(fileName, nameof(fileName));
@@ -362,7 +375,8 @@ namespace Nitro.FileStorage.Services
                 return result;
             }
 
-            options = new GridFSUploadOptions();
+            options ??= new GridFSUploadOptions();
+
             var id = ObjectId.GenerateNewId();
             await using GridFSUploadStream<ObjectId> destination = await ImagesBucket
                 .OpenUploadStreamAsync(id, newFileName, options, cancellationToken).ConfigureAwait(false);
@@ -533,7 +547,7 @@ namespace Nitro.FileStorage.Services
             var result = new FileDownloadModel()
             {
                 ObjectId = objectId,
-                FileInfo = null
+                FileInfo = fileInfo
             };
             await ImagesBucket.DownloadToStreamAsync(objectId, destination, null, cancellationToken);
             return result;
