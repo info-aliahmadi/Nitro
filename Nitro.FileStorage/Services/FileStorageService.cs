@@ -510,48 +510,23 @@ namespace Nitro.FileStorage.Services
         /// <param name="objectId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<FileDownloadModel?> DownloadAsBytesAsync(ObjectId objectId,
+        public async Task<byte[]> DownloadAsBytesAsync(ObjectId objectId,
             CancellationToken cancellationToken = default)
         {
-            var fileInfo = await GetFileInfo(objectId);
-            if (fileInfo == null)
-            {
-                return null;
-            }
             var options = new GridFSDownloadOptions
             {
                 Seekable = true,
                 
             };
-            var bytes = await ImagesBucket.DownloadAsBytesAsync(fileInfo.Id, options, cancellationToken);
+            var bytes = await ImagesBucket.DownloadAsBytesAsync(objectId, options, cancellationToken);
 
-            var result = new FileDownloadModel()
-            {
-                ObjectId = objectId,
-                FileInfo = fileInfo,
-                FileBytes = bytes
-            };
-
-            return result;
+            return bytes;
         }
 
-        public async Task<FileDownloadModel?> DownloadToStreamAsync(ObjectId objectId, Stream destination,
+        public async Task DownloadToStreamAsync(ObjectId objectId, Stream destination,
             CancellationToken cancellationToken = default)
         {
-            var fileInfo = await GetFileInfo(objectId);
-            if (fileInfo == null)
-            {
-                return null;
-            }
-
-            var result = new FileDownloadModel()
-            {
-                ObjectId = objectId,
-                FileInfo = fileInfo
-            };
             await ImagesBucket.DownloadToStreamAsync(objectId, destination, null, cancellationToken);
-            return result;
-
         }
     }
 }

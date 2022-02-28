@@ -1,3 +1,5 @@
+using System.IO.Pipelines;
+using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
@@ -206,55 +208,61 @@ namespace Nitro.Web.Controllers
         [Route(nameof(DownloadFile))]
         public async Task<IActionResult> DownloadFile(string objectId, CancellationToken cancellationToken)
         {
-            var parsedObjectId = new ObjectId(objectId);
-            var result = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId, cancellationToken);
-            if (result == null)
+            var parsedObjectId = new ObjectId(objectId.Trim());
+
+            var fileInfo = await _fileStorageService.GetFileInfo(parsedObjectId);
+            if (fileInfo == null)
             {
                 return BadRequest("file Not Found.");
             }
 
+            var fileBytes = await _fileStorageService.DownloadAsBytesAsync(parsedObjectId, cancellationToken);
+           
+
             string? contentType = null;
             string? fileName = null;
-            var metadata = result.FileInfo.Metadata;
+            var metadata = fileInfo.Metadata;
             if (metadata != null)
             {
                 contentType = metadata.GetElement("ContentType").Value.ToString();
                 fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
             }
 
-            return new FileContentResult(result.FileBytes, contentType ?? "application/octet-stream")
+            return new FileContentResult(fileBytes, contentType ?? "application/octet-stream")
             {
                 FileDownloadName = fileName,
-                EnableRangeProcessing = true   // enable resume download ability
+                EnableRangeProcessing = true // enable resume download ability
             };
         }
 
         [HttpGet]
         [Route(nameof(DownloadFileStream))]
-        public async Task<FileResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
+        public async Task<IActionResult> DownloadFileStream(string objectId, CancellationToken cancellationToken)
         {
-            Stream destination = Stream.Null;
+            var parsedObjectId = new ObjectId(objectId.Trim());
 
-            //MemoryStream destination = new MemoryStream();
-            var parsedObjectId = new ObjectId(objectId);
-            var result =
-                await _fileStorageService.DownloadToStreamAsync(parsedObjectId, destination, cancellationToken);
+            var fileInfo = await _fileStorageService.GetFileInfo(parsedObjectId);
+            if (fileInfo == null)
+            {
+                return BadRequest("file Not Found.");
+            }
+
+            var tempFilePath = Directory.GetCurrentDirectory() + "\\Temp\\" + fileInfo.Filename;
+            //Stream destination = new MemoryStream();  // using MemoryStream cause using a lot of memory
+            Stream destination = new FileStream(tempFilePath, FileMode.Create, FileAccess.ReadWrite);
+            await _fileStorageService.DownloadToStreamAsync(parsedObjectId, destination, cancellationToken);
 
             destination.Seek(0, SeekOrigin.Begin);
-            if (result == null)
-            {
-                return null;
-            }
-            var metadata = result.FileInfo.Metadata;
-            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
             
+            var metadata = fileInfo.Metadata;
+            var fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+
             return new FileStreamResult(destination, "application/octet-stream")
             {
                 FileDownloadName = fileName,
-                EnableRangeProcessing = true   // enable resume download ability
+                EnableRangeProcessing = true // enable resume download ability
             };
         }
-     
 
     }
 }

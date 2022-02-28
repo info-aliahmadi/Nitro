@@ -17,6 +17,7 @@ namespace Nitro.FileStorage.Services
         ValidationFileEnum ValidateFile(byte[] file, string? fileName, long? lengthOfFile = null, FileSizeEnum fileSize = FileSizeEnum.Small, CancellationToken cancellationToken = default);
 
         string GetValidationMessage(ValidationFileEnum validationFileEnum);
+        Task<GridFSFileInfo?> GetFileInfo(ObjectId objectId);
 
         Task<FileUploadResultModel> UploadFromBytesAsync(string? fileName, string? contentType, byte[] bytes,
             CancellationToken cancellationToken = default);
@@ -35,9 +36,9 @@ namespace Nitro.FileStorage.Services
             GridFSUploadOptions options = null,
             CancellationToken cancellationToken = default(CancellationToken));
 
-        Task<FileDownloadModel?> DownloadAsBytesAsync(ObjectId objectId, CancellationToken cancellationToken = default);
+        Task<byte[]> DownloadAsBytesAsync(ObjectId objectId, CancellationToken cancellationToken = default);
 
-        Task<FileDownloadModel?> DownloadToStreamAsync(ObjectId objectId, Stream destination, CancellationToken cancellationToken = default);
+        Task DownloadToStreamAsync(ObjectId objectId, Stream destination, CancellationToken cancellationToken = default);
 
 
     }
