@@ -1,3 +1,4 @@
+using Nitro.FileStorage.Infrastructure;
 using Nitro.FileStorage.Infrastructure.Settings;
 using Nitro.FileStorage.Infrastructure.SignatureVerify;
 using Nitro.FileStorage.Services;
@@ -16,18 +17,16 @@ builder.Services.AddSwaggerGen();
 
 // Add services to the container.
 builder.Services.AddSingleton<IFileStorageDatabaseSetting>((serviceProvider) =>
-{
-    return builder.Configuration.GetSection("FileStorageDatabase").Get<FileStorageDatabaseSetting>();
-});
+    builder.Configuration.GetSection("FileStorageDatabase").Get<FileStorageDatabaseSetting>());
 
 // Add services to the container.
 builder.Services.AddSingleton<IUploadFileSetting>((serviceProvider) =>
-{
-    return builder.Configuration.GetSection("UploadFileSetting").Get<UploadFileSetting>();
-});
+    builder.Configuration.GetSection("UploadFileSetting").Get<UploadFileSetting>());
 
 builder.Services.AddSingleton<IFileTypeVerifier, FileTypeVerifier>();
+builder.Services.AddSingleton<IValidationService, ValidationService>();
 builder.Services.AddSingleton<IFileStorageService, FileStorageService>();
+builder.Services.AddHostedService<AutoDeleteService>(); // Auto delete temp file
 
 var app = builder.Build();
 

@@ -2,6 +2,7 @@
 {
     public class UploadFileSetting : IUploadFileSetting
     {
+        public bool AllowDuplicateFile { get; set; }
         public string WhiteListExtensions { get; set; } = null!;
         public string SignatureValidationExtensions { get; set; } = null!;
 

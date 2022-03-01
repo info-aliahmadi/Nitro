@@ -26,6 +26,12 @@ namespace Nitro.Web.Controllers
             _fileStorageService = fileStorageService;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost]
         [DisableFormValueModelBinding]
         //[GenerateAntiforgeryTokenCookie]
@@ -43,6 +49,12 @@ namespace Nitro.Web.Controllers
             return Ok(result);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="files"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         [HttpPost]
         [DisableFormValueModelBinding]
         //[GenerateAntiforgeryTokenCookie]
@@ -210,7 +222,7 @@ namespace Nitro.Web.Controllers
         {
             var parsedObjectId = new ObjectId(objectId.Trim());
 
-            var fileInfo = await _fileStorageService.GetFileInfo(parsedObjectId);
+            var fileInfo = await _fileStorageService.GetFileInfoById(parsedObjectId);
             if (fileInfo == null)
             {
                 return BadRequest("file Not Found.");
@@ -241,7 +253,7 @@ namespace Nitro.Web.Controllers
         {
             var parsedObjectId = new ObjectId(objectId.Trim());
 
-            var fileInfo = await _fileStorageService.GetFileInfo(parsedObjectId);
+            var fileInfo = await _fileStorageService.GetFileInfoById(parsedObjectId);
             if (fileInfo == null)
             {
                 return BadRequest("file Not Found.");

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Options;
+﻿using System.Security.Cryptography;
+using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Misc;
@@ -11,7 +12,7 @@ namespace Nitro.FileStorage.Services
 {
     public class FileStorageService : IFileStorageService
     {
-        private readonly IFileTypeVerifier _fileTypeVerifier;
+        private readonly IValidationService _validationService;
         private readonly IUploadFileSetting _fileStorageSetting;
         public GridFSBucket ImagesBucket { get; set; }
         public IMongoDatabase MongoDatabase { get; set; }
@@ -19,10 +20,10 @@ namespace Nitro.FileStorage.Services
         public FileStorageService(
             IFileStorageDatabaseSetting fileStorageDatabaseSetting,
             IUploadFileSetting fileStorageSetting,
-            IFileTypeVerifier fileTypeVerifier)
+            IValidationService validationService)
         {
             _fileStorageSetting = fileStorageSetting;
-            _fileTypeVerifier = fileTypeVerifier;
+            _validationService = validationService;
 
             var mongoClient = new MongoClient(
                 fileStorageDatabaseSetting.ConnectionString);
@@ -40,189 +41,44 @@ namespace Nitro.FileStorage.Services
                     //    ReadPreference = ReadPreference.Secondary
                 }
             );
-           
-
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="fileName"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFileWhiteList(string fileName)
+        public string GetMd5HashCode(byte[] bytes)
         {
-            var fileExtension = Path.GetExtension(fileName).ToLowerInvariant();
-
-            var whiteListExtensions = _fileStorageSetting.WhiteListExtensions.Split(",");
-            if (!whiteListExtensions.Contains(fileExtension))
-            {
-                // If the code runs to this location, it means that no files have been saved
-                return ValidationFileEnum.FileNotSupported;
-            }
-            return ValidationFileEnum.Ok;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="fileExtension"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFileSignature(byte[] file, string fileExtension)
-        {
-            var signatureValidationExtensions = _fileStorageSetting.SignatureValidationExtensions.Split(",");
-
-            if (signatureValidationExtensions.Contains(fileExtension))
-            {
-                // we will see how we can protect the integrity of our file uploads by
-                // verifying the files are what the user says they are
-                var verifySignature = _fileTypeVerifier.Verify(file, fileExtension);
-                if (!verifySignature.IsVerified)
-                {
-                    return ValidationFileEnum.InvalidSignature;
-                }
-            }
-            return ValidationFileEnum.Ok;
+            using var md5 = MD5.Create();
+            var hash = md5.ComputeHash(bytes);
+            return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lengthOfFile"></param>
-        /// <param name="fileSize"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFileMaxLength(long lengthOfFile,
-            FileSizeEnum fileSize = FileSizeEnum.Small)
-        {
-            return fileSize switch
-            {
-                FileSizeEnum.Small when lengthOfFile > _fileStorageSetting.MaxSizeLimitSmallFile => ValidationFileEnum
-                    .FileIsTooLarge,
-                FileSizeEnum.Large when lengthOfFile > _fileStorageSetting.MaxSizeLimitLargeFile => ValidationFileEnum
-                    .FileIsTooLarge,
-                _ => ValidationFileEnum.Ok
-            };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lengthOfFile"></param>
-        /// <param name="fileSize"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFileMinLength(long lengthOfFile,
-            FileSizeEnum fileSize = FileSizeEnum.Small)
-        {
-            return fileSize switch
-            {
-
-                FileSizeEnum.Small when lengthOfFile < _fileStorageSetting.MinSizeLimitSmallFile => ValidationFileEnum
-                    .FileIsTooSmall,
-
-                FileSizeEnum.Large when lengthOfFile < _fileStorageSetting.MinSizeLimitLargeFile => ValidationFileEnum
-                    .FileIsTooSmall,
-                _ => ValidationFileEnum.Ok
-            };
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="lengthOfFile"></param>
-        /// <param name="fileSize"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFileLength(long lengthOfFile,
-            FileSizeEnum fileSize = FileSizeEnum.Small)
-        {
-            var result = ValidateFileMaxLength(lengthOfFile, fileSize);
-            return result == ValidationFileEnum.Ok ? result : ValidateFileMinLength(lengthOfFile, fileSize);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="file"></param>
-        /// <param name="fileName"></param>
-        /// <param name="lengthOfFile"></param>
-        /// <param name="fileSize"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        public ValidationFileEnum ValidateFile(byte[] file, string? fileName,
-            long? lengthOfFile = null,
-            FileSizeEnum fileSize = FileSizeEnum.Small, CancellationToken cancellationToken = default)
-        {
-            var length = lengthOfFile ?? file.Length;
-            if (string.IsNullOrEmpty(fileName))
-            {
-                // If the code runs to this location, it means that no files have been saved
-                return ValidationFileEnum.FileNotFound;
-            }
-
-            var validateFileExtenstionResult = ValidateFileWhiteList(fileName);
-            if (validateFileExtenstionResult != ValidationFileEnum.Ok)
-            {
-                return validateFileExtenstionResult;
-            }
-
-
-            var validateFileLengthResult = ValidateFileLength(length, fileSize);
-            if (validateFileLengthResult != ValidationFileEnum.Ok)
-            {
-                return validateFileLengthResult;
-            }
-
-            var fileExtension = Path.GetExtension(fileName);
-            var validateFileSignatureResult = ValidateFileSignature(file, fileExtension);
-            if (validateFileSignatureResult != ValidationFileEnum.Ok)
-            {
-                return validateFileLengthResult;
-            }
-
-            return ValidationFileEnum.Ok;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="validationFileEnum"></param>
-        /// <returns></returns>
-        public string GetValidationMessage(ValidationFileEnum validationFileEnum)
-        {
-            switch (validationFileEnum)
-            {
-                case ValidationFileEnum.FileNotFound:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "No files data in the request.";
-
-                case ValidationFileEnum.FileIsTooLarge:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is too large.";
-
-                case ValidationFileEnum.FileIsTooSmall:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is too small.";
-
-                case ValidationFileEnum.FileNotSupported:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file is not supported.";
-
-                case ValidationFileEnum.InvalidSignature:
-                    // If the code runs to this location, it means that no files have been saved
-                    return "The file extension is not trusted.";
-
-                case ValidationFileEnum.Ok:
-                default:
-                    return "";
-            }
-        }
         /// <summary>
         /// 
         /// </summary>
         /// <param name="objectId"></param>
         /// <returns></returns>
-        public async Task<GridFSFileInfo?> GetFileInfo(ObjectId objectId)
+        public async Task<GridFSFileInfo?> GetFileInfoById(ObjectId objectId)
         {
             var filter = Builders<GridFSFileInfo>.Filter.And(Builders<GridFSFileInfo>.Filter.Eq(x => x.Id, objectId));
 
             var cursor = await ImagesBucket.FindAsync(new BsonDocument {{"_id", objectId}});
+
+            var result = (await cursor.ToListAsync()).FirstOrDefault();
+
+            return result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="md5HashCode"></param>
+        /// <returns></returns>
+        public async Task<GridFSFileInfo?> GetFileInfoByMd5HashCode(string md5HashCode)
+        {
+            if (string.IsNullOrEmpty(md5HashCode) && md5HashCode.Length != 32)
+            {
+                return null;
+            }
+
+            var cursor = await ImagesBucket.FindAsync(new BsonDocument {{"md5", md5HashCode}});
 
             var result = (await cursor.ToListAsync()).FirstOrDefault();
 
@@ -245,6 +101,17 @@ namespace Nitro.FileStorage.Services
             {
                 FileName = fileName
             };
+            if (!_fileStorageSetting.AllowDuplicateFile)
+            {
+                var md5 = GetMd5HashCode(bytes);
+                var existedFile = await GetFileInfoByMd5HashCode(md5);
+                if (existedFile != null)
+                {
+                    result.ObjectId = existedFile.Id.ToString();
+                    return result;
+                }
+            }
+
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
@@ -254,11 +121,12 @@ namespace Nitro.FileStorage.Services
                 }
             };
             var firstBytes = bytes.Take(64).ToArray();
-            var validateResult = ValidateFile(firstBytes, fileName, bytes.Length, FileSizeEnum.Small);
+            var validateResult =
+                _validationService.ValidateFile(firstBytes, fileName, bytes.Length, FileSizeEnum.Small);
             if (validateResult != ValidationFileEnum.Ok)
             {
                 result.IsSuccessful = false;
-                result.ErrorMessage = GetValidationMessage(validateResult);
+                result.ErrorMessage = _validationService.GetValidationMessage(validateResult);
                 return result;
             }
 
@@ -291,9 +159,11 @@ namespace Nitro.FileStorage.Services
         /// <param name="stream"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<FileUploadResultModel> UploadSmallFileFromStreamAsync(string? fileName, string? contentType, Stream stream,
+        public async Task<FileUploadResultModel> UploadSmallFileFromStreamAsync(string? fileName, string? contentType,
+            Stream stream,
             CancellationToken cancellationToken = default)
         {
+
             var options = new GridFSUploadOptions
             {
                 Metadata = new BsonDocument
@@ -308,10 +178,12 @@ namespace Nitro.FileStorage.Services
             // Here, we just use the temporary folder and a random file name
             var newFileName = Path.GetRandomFileName();
 
-            var result = await UploadFromStreamAsync(fileName, newFileName,FileSizeEnum.Small, stream, options, cancellationToken);
+            var result = await UploadFromStreamAsync(fileName, newFileName, FileSizeEnum.Small, stream, options,
+                cancellationToken);
 
             return result;
         }
+
         /// <summary>
         /// 
         /// </summary>
@@ -320,7 +192,8 @@ namespace Nitro.FileStorage.Services
         /// <param name="stream"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task<FileUploadResultModel> UploadLargeFileFromStreamAsync(string? fileName, string? contentType, Stream stream,
+        public async Task<FileUploadResultModel> UploadLargeFileFromStreamAsync(string? fileName, string? contentType,
+            Stream stream,
             CancellationToken cancellationToken = default)
         {
             var options = new GridFSUploadOptions
@@ -337,16 +210,18 @@ namespace Nitro.FileStorage.Services
             // Here, we just use the temporary folder and a random file name
             var newFileName = Path.GetRandomFileName();
 
-            var result = await UploadFromStreamAsync(fileName, newFileName, FileSizeEnum.Large, stream, options, cancellationToken);
+            var result = await UploadFromStreamAsync(fileName, newFileName, FileSizeEnum.Large, stream, options,
+                cancellationToken);
 
             return result;
         }
+
         /// <summary>
         /// 
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="newFileName"></param>
-        /// <param name="filesize"></param>
+        /// <param name="fileSize"></param>
         /// <param name="source"></param>
         /// <param name="options"></param>
         /// <param name="cancellationToken"></param>
@@ -362,25 +237,29 @@ namespace Nitro.FileStorage.Services
             Ensure.IsNotNull<string>(fileName, nameof(fileName));
             Ensure.IsNotNull<string>(newFileName, nameof(newFileName));
             Ensure.IsNotNull<Stream>(source, nameof(source));
+            MD5 hasher = MD5.Create();
 
+            hasher.Initialize();
             var result = new FileUploadResultModel()
             {
                 FileName = fileName
             };
-            var whiteListResult = ValidateFileWhiteList(fileName);
+            var whiteListResult = _validationService.ValidateFileWhiteList(fileName);
             if (whiteListResult != ValidationFileEnum.Ok)
             {
                 result.IsSuccessful = false;
-                result.ErrorMessage = GetValidationMessage(whiteListResult);
+                result.ErrorMessage = _validationService.GetValidationMessage(whiteListResult);
                 return result;
             }
 
             options ??= new GridFSUploadOptions();
 
+            var chunkSizeBytes = options.ChunkSizeBytes ?? 261120; // 255KB
+
             var id = ObjectId.GenerateNewId();
             await using GridFSUploadStream<ObjectId> destination = await ImagesBucket
                 .OpenUploadStreamAsync(id, newFileName, options, cancellationToken).ConfigureAwait(false);
-            var buffer = new byte[ImagesBucket.Options.ChunkSizeBytes];
+            var buffer = new byte[chunkSizeBytes];
             var isFilledFirstBytes = false;
             long lengthOfFile = 0;
             Exception sourceException;
@@ -404,18 +283,19 @@ namespace Nitro.FileStorage.Services
                 {
                     if (bytesRead != 0)
                     {
+                        hasher.TransformBlock(buffer, 0, bytesRead, buffer, 0);
                         if (!isFilledFirstBytes)
                         {
                             var firstBytes = buffer.Take(64).ToArray();
                             var fileExtension = Path.GetExtension(fileName);
-                            var signatureResult = ValidateFileSignature(firstBytes, fileExtension);
+                            var signatureResult = _validationService.ValidateFileSignature(firstBytes, fileExtension);
                             if (signatureResult != ValidationFileEnum.Ok)
                             {
                                 await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
                                 buffer = (byte[]) null;
                                 result.ObjectId = destination.Id.ToString();
                                 result.IsSuccessful = false;
-                                result.ErrorMessage = GetValidationMessage(signatureResult);
+                                result.ErrorMessage = _validationService.GetValidationMessage(signatureResult);
                                 return result;
                             }
 
@@ -424,24 +304,27 @@ namespace Nitro.FileStorage.Services
 
                         lengthOfFile += bytesRead;
 
-                        var fileLengthResult = ValidateFileMaxLength(lengthOfFile, fileSize);
+                        var fileLengthResult = _validationService.ValidateFileMaxLength(lengthOfFile, fileSize);
                         if (fileLengthResult != ValidationFileEnum.Ok)
                         {
                             try
                             {
                                 await destination.AbortAsync(cancellationToken).ConfigureAwait(false);
-                                await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
                             }
                             catch
                             {
+
+                            }
+                            finally
+                            {
                                 await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
-                                await DeleteChunkAsync(destination.Id);
+                                //await DeleteChunkAsync(destination.Id);
                                 //await ImagesBucket.DeleteAsync(destination.Id, cancellationToken);
                             }
 
                             buffer = (byte[]) null;
                             result.IsSuccessful = false;
-                            result.ErrorMessage = GetValidationMessage(fileLengthResult);
+                            result.ErrorMessage = _validationService.GetValidationMessage(fileLengthResult);
                             return result;
                         }
 
@@ -449,16 +332,55 @@ namespace Nitro.FileStorage.Services
                     }
                     else
                     {
-                        await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
-                        buffer = (byte[])null;
+                        hasher.TransformFinalBlock(new byte[0], 0, 0);
+                        string md5hashCode = BitConverter.ToString(hasher.Hash).Replace("-", "").ToLowerInvariant();
 
-                        var fileLengthResult = ValidateFileMinLength(lengthOfFile, fileSize);
+                        if (!_fileStorageSetting.AllowDuplicateFile)
+                        {
+                            var existedFile = await GetFileInfoByMd5HashCode(md5hashCode);
+                            if (existedFile != null)
+                            {
+                                try
+                                {
+                                    await destination.AbortAsync(cancellationToken).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+
+                                }
+                                finally
+                                {
+                                    await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
+                                }
+
+                                result.ObjectId = existedFile.Id.ToString();
+                                return result;
+                            }
+                        }
+
+                        var fileLengthResult = _validationService.ValidateFileMinLength(lengthOfFile, fileSize);
                         if (fileLengthResult != ValidationFileEnum.Ok)
                         {
-                            await ImagesBucket.DeleteAsync(destination.Id, cancellationToken);
+                            try
+                            {
+                                await destination.AbortAsync(cancellationToken).ConfigureAwait(false);
+                            }
+                            catch
+                            {
+
+                            }
+                            finally
+                            {
+                                await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
+                            }
+
                             result.IsSuccessful = false;
-                            result.ErrorMessage = GetValidationMessage(fileLengthResult);
+                            result.ErrorMessage = _validationService.GetValidationMessage(fileLengthResult);
+                            return result;
                         }
+
+                        await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
+                        buffer = (byte[]) null;
 
                         result.ObjectId = destination.Id.ToString();
                         return result;
@@ -473,8 +395,11 @@ namespace Nitro.FileStorage.Services
                     }
                     catch
                     {
+
+                    }
+                    finally
+                    {
                         await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
-                        await DeleteChunkAsync(destination.Id);
                     }
 
                     break;
@@ -493,7 +418,6 @@ namespace Nitro.FileStorage.Services
         /// 
         /// </summary>
         /// <param name="objectId"></param>
-        /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public async Task DeleteChunkAsync(ObjectId objectId)
         {
@@ -516,7 +440,7 @@ namespace Nitro.FileStorage.Services
             var options = new GridFSDownloadOptions
             {
                 Seekable = true,
-                
+
             };
             var bytes = await ImagesBucket.DownloadAsBytesAsync(objectId, options, cancellationToken);
 

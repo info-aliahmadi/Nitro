@@ -2,7 +2,8 @@
 {
     public interface IUploadFileSetting
     {
-        string WhiteListExtensions { get; set; } 
+        bool AllowDuplicateFile { get; set; }
+        string WhiteListExtensions { get; set; }
         string SignatureValidationExtensions { get; set; }
 
         long MaxSizeLimitSmallFile { get; set; }
