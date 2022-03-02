@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Nitro.FileStorage.Infrastructure
+namespace Nitro.FileStorage.Infrastructure.ActionFilters
 {
     public class GenerateAntiforgeryTokenCookieAttribute : ResultFilterAttribute
     {

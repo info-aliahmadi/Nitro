@@ -1,15 +1,12 @@
-using System.IO.Pipelines;
-using System.Net;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
 using MongoDB.Bson;
-using Nitro.FileStorage.Infrastructure;
-using Nitro.FileStorage.Infrastructure.Settings;
+using Nitro.FileStorage.Infrastructure.ActionFilters;
 using Nitro.FileStorage.Models;
 using Nitro.FileStorage.Services;
 
-namespace Nitro.Web.Controllers
+namespace Nitro.FileStorage.Controllers
 {
     [ApiController]
     [Route("[controller]")]

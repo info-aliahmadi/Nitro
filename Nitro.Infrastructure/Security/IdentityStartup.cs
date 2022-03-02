@@ -3,11 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Nitro.Core.Domain.Auth;
 using Nitro.Infrastructure.Data;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication;
 
 namespace Nitro.Infrastructure.Security
 {
@@ -19,6 +15,19 @@ namespace Nitro.Infrastructure.Security
             services.AddIdentityCore<User>(o => o.SignIn.RequireConfirmedAccount = false)
                  .AddRoles<Role>()
                  .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddAuthentication()
+                .AddCookie(options =>
+                {
+                    options.LoginPath = "/Account/Unauthorized/";
+                    options.AccessDeniedPath = "/Account/Forbidden/";
+                })
+                .AddJwtBearer(options =>
+                {
+                    options.Audience = "http://localhost:5001/";
+                    options.Authority = "http://localhost:5000/";
+                });
+
 
             services.Configure<IdentityOptions>(options =>
             {
