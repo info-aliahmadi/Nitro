@@ -1,9 +1,7 @@
-﻿
+﻿using System.Data;
 using Microsoft.EntityFrameworkCore.Storage;
-using System.Data;
 
-
-namespace Nitro.Kernel.Interfaces
+namespace Nitro.Kernel.Interfaces.Data
 {
     /// <summary>
     /// Contains all the repository methods.

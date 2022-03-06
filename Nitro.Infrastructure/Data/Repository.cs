@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel.Interfaces;
 using System.Data;
+using Nitro.Kernel.Interfaces.Data;
 
 namespace Nitro.Infrastructure.Data
 {

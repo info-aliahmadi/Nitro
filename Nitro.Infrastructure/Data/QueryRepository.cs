@@ -14,6 +14,7 @@ using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel;
 using Nitro.Kernel.Extensions;
 using Nitro.Kernel.Interfaces;
+using Nitro.Kernel.Interfaces.Data;
 
 namespace Nitro.Infrastructure.Data
 {

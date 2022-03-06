@@ -1,10 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data.Common;
+using System.Linq.Expressions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Kernel.Extensions;
-using System.Data.Common;
-using System.Linq.Expressions;
 
-namespace Nitro.Kernel.Interfaces
+namespace Nitro.Kernel.Interfaces.Data
 {
     /// <summary>
     /// Contains all the query methods.

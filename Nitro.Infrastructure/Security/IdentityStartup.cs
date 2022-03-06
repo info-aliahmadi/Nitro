@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Nitro.Core.Domain.Auth;
 using Nitro.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Http;
 
 namespace Nitro.Infrastructure.Security
 {
@@ -19,14 +20,28 @@ namespace Nitro.Infrastructure.Security
             services.AddAuthentication()
                 .AddCookie(options =>
                 {
-                    options.LoginPath = "/Account/Unauthorized/";
-                    options.AccessDeniedPath = "/Account/Forbidden/";
+                    options.Cookie.Name = "NitroCookie";
+                    options.Cookie.HttpOnly = true;
+                    options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
+                    options.LoginPath = new PathString("/Account/Login");
+                    options.AccessDeniedPath = new PathString("/Account/AccessDenied");
+                    options.LogoutPath = new PathString("/Account/Logout");
+                    // ReturnUrlParameter requires 
+                    //using Microsoft.AspNetCore.Authentication.Cookies;
+                    options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
+                    options.SlidingExpiration = true;
                 })
                 .AddJwtBearer(options =>
                 {
                     options.Audience = "http://localhost:5001/";
                     options.Authority = "http://localhost:5000/";
                 });
+
+            services.AddAuthorization(options =>
+            {
+                // By default, all incoming requests will be authorized according to the default policy.
+                options.FallbackPolicy = options.DefaultPolicy;
+            });
 
 
             services.Configure<IdentityOptions>(options =>
@@ -53,31 +68,6 @@ namespace Nitro.Infrastructure.Security
                 options.SignIn.RequireConfirmedEmail = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
             });
-
-            services.ConfigureApplicationCookie(options =>
-            {
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.Cookie.Name = "YourAppCookieName";
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-                options.LoginPath = "/Identity/Account/Login";
-                // ReturnUrlParameter requires 
-                //using Microsoft.AspNetCore.Authentication.Cookies;
-                options.ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-                options.SlidingExpiration = true;
-            });
-
-            services.ConfigureApplicationCookie(options =>
-            {
-                // Cookie settings
-                options.Cookie.HttpOnly = true;
-                options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-
-                options.LoginPath = "/Identity/Account/Login";
-                options.AccessDeniedPath = "/Identity/Account/AccessDenied";
-                options.SlidingExpiration = true;
-            });
-
 
         }
     }
