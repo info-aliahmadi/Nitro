@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Nitro.Core.Interfaces.Setting;
 using Nitro.Core.Interfaces.Settings;
 using Nitro.Kernel.Interfaces;
 using Serilog;

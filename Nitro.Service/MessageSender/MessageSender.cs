@@ -1,24 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using MailKit.Net.Smtp;
+﻿using MailKit.Net.Smtp;
 using MailKit.Security;
 using MimeKit;
-using Nitro.Core.Interfaces;
 using Nitro.Core.Interfaces.Settings;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Models;
+using Twilio.Clients;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
 
-namespace Nitro.Service
+namespace Nitro.Service.MessageSender
 {
     public class MessageSender : IEmailSender, ISmsSender
     {
         private readonly ISmtpSetting _smtpSetting;
-        public MessageSender(ISmtpSetting smtpSetting)
+        private readonly ISmsSetting _smsSetting;
+        public MessageSender(ISmtpSetting smtpSetting, ISmsSetting smsSetting)
         {
             _smtpSetting = smtpSetting;
+            _smsSetting = smsSetting;
         }
         public async Task SendEmailAsync(EmailRequestRecord requestRecord)
         {
@@ -50,10 +49,17 @@ namespace Nitro.Service
 
         }
 
-        public Task SendSmsAsync(SmsRequestRecord requestRecord)
+        public async Task SendSmsAsync(SmsRequestRecord requestRecord)
         {
-            // Plug in your SMS service here to send a text message.
-            return Task.FromResult(0);
+            var client = new TwilioRestClient( _smsSetting.AccountSid, _smsSetting.AuthToken);
+
+            // Pass the client into the resource method
+            var message = await MessageResource.CreateAsync(
+                to: new PhoneNumber(requestRecord.ToNumber),
+                from: new PhoneNumber(_smsSetting.FromNumber),
+                body: requestRecord.Message,
+                client: client);
+
         }
     }
 }

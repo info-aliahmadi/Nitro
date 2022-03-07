@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Nitro.Core.Model.Auth
 {
-    public record ResetPasswordRecord
+    public record ResetPasswordModel
     {
         [Required]
         [EmailAddress]

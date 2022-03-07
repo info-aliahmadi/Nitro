@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Nitro.Core.Model.Auth
 {
-    public record LoginRecord
+    public record LoginModel
     {
         [Required]
         [EmailAddress]
