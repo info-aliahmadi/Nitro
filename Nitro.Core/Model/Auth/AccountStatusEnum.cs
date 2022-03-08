@@ -28,7 +28,16 @@ namespace Nitro.Core.Model.Auth
         IsNotAllowed = 5,
 
         [Description("RequireConfirmedEmail")]
-        RequireConfirmedEmail = 6
+        RequireConfirmedEmail = 6,
+
+        [Description("ErrorExternalProvider")]
+        ErrorExternalProvider = 7,
+
+        [Description("NullExternalLoginInfo")]
+        NullExternalLoginInfo = 8,
+
+        [Description("ExternalLoginFailure")]
+        ExternalLoginFailure = 9
 
     }
     public static class EnumExtensions
