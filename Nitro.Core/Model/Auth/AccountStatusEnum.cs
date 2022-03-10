@@ -37,7 +37,10 @@ namespace Nitro.Core.Model.Auth
         NullExternalLoginInfo = 8,
 
         [Description("ExternalLoginFailure")]
-        ExternalLoginFailure = 9
+        ExternalLoginFailure = 9,
+
+        [Description("InvalidCode")]
+        InvalidCode = 10
 
     }
     public static class EnumExtensions

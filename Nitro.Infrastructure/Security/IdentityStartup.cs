@@ -15,7 +15,8 @@ namespace Nitro.Infrastructure.Security
 
             services.AddIdentityCore<User>(o => o.SignIn.RequireConfirmedAccount = false)
                  .AddRoles<Role>()
-                 .AddEntityFrameworkStores<ApplicationDbContext>();
+                 .AddEntityFrameworkStores<ApplicationDbContext>()
+                 .AddDefaultTokenProviders();
 
             services.AddAuthentication()
                 .AddCookie(options =>

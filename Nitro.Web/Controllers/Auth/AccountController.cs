@@ -1,11 +1,12 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Nitro.Core.Domain.Auth;
 using Nitro.Core.Model.Auth;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Models;
+using System.Security.Claims;
 
 namespace Nitro.Web.Controllers.Auth
 {
@@ -16,17 +17,20 @@ namespace Nitro.Web.Controllers.Auth
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
         private readonly IEmailSender _emailSender;
+        private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
 
         public AccountController(
             UserManager<User> userManager,
             SignInManager<User> signInManager,
             IEmailSender emailSender,
+            ISmsSender smsSender,
             ILoggerFactory loggerFactory)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
+            _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
         }
 
@@ -90,7 +94,7 @@ namespace Nitro.Web.Controllers.Auth
             var result = new AccountResult();
             if (ModelState.IsValid)
             {
-                var user = new User {UserName = model.Email, Email = model.Email};
+                var user = new User { UserName = model.Email, Email = model.Email };
                 var identityResult = await _userManager.CreateAsync(user, model.Password);
                 if (identityResult.Succeeded)
                 {
@@ -101,7 +105,8 @@ namespace Nitro.Web.Controllers.Auth
                         //For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
                         //Send an email with this link
                         var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                        var callbackUrl = Url.Action("ConfirmEmail", "Account", new {userId = user.Id, code = code},
+                        var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                            new { userId = user.Id, code = code, returnUrl = "" },
                             protocol: HttpContext.Request.Scheme);
 
                         emailRequest.Subject = "ConfirmEmail";
@@ -168,7 +173,7 @@ namespace Nitro.Web.Controllers.Auth
         public IActionResult ExternalLogin(string provider, string returnUrl = null)
         {
             // Request a redirect to the external login provider.
-            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new {ReturnUrl = returnUrl});
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
             var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
             return Challenge(properties, provider);
         }
@@ -228,7 +233,7 @@ namespace Nitro.Web.Controllers.Auth
                 _logger.LogWarning("Redirect the user {Email} to ExternalLoginConfirmation", email);
 
                 var redirectUrl = Url.Action("ExternalLoginConfirmation", "Account",
-                    new ExternalLoginConfirmationModel {Email = email});
+                    new ExternalLoginConfirmationModel { Email = email });
                 return Redirect(redirectUrl);
             }
         }
@@ -250,7 +255,7 @@ namespace Nitro.Web.Controllers.Auth
                     return Ok(result);
                 }
 
-                var user = new User {UserName = model.Email, Email = model.Email};
+                var user = new User { UserName = model.Email, Email = model.Email };
                 var userManagerResult = await _userManager.CreateAsync(user);
                 if (userManagerResult.Succeeded)
                 {
@@ -294,30 +299,23 @@ namespace Nitro.Web.Controllers.Auth
         // GET: /Account/ConfirmEmail
         [HttpGet]
         [AllowAnonymous]
-        public async Task<IActionResult> ConfirmEmail(string userId, string code)
+        public async Task<IActionResult> ConfirmEmail(string userId, string code, string returnUrl)
         {
             if (userId == null || code == null)
             {
-                return View("Error");
+                _logger.LogWarning("Input data are invalid.; Requested By: " + userId);
+                return Redirect(returnUrl + "&status=error");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return View("Error");
+                _logger.LogWarning("Input data are invalid.; Requested By: " + userId);
+                return Redirect(returnUrl + "&status=error");
             }
-
+            _logger.LogInformation("User confirmed the code.; Requested By: " + userId);
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            return View(result.Succeeded ? "ConfirmEmail" : "Error");
-        }
-
-        //
-        // GET: /Account/ForgotPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPassword()
-        {
-            return View();
+            return Redirect(returnUrl + "&status" + (result.Succeeded ? "succeeded" : "error"));
         }
 
         //
@@ -325,46 +323,60 @@ namespace Nitro.Web.Controllers.Auth
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
         {
+            var result = new AccountResult();
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
                 if (user == null || !(await _userManager.IsEmailConfirmedAsync(user)))
                 {
                     // Don't reveal that the user does not exist or is not confirmed
-                    return View("ForgotPasswordConfirmation");
+                    result.Status = AccountStatusEnum.Failed;
+                    return Ok(result);
                 }
 
-                // For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                // Send an email with this link
-                //var code = await _userManager.GeneratePasswordResetTokenAsync(user);
-                //var callbackUrl = Url.Action("ResetPassword", "Account", new { userId = user.Id, code = code }, protocol: HttpContext.Request.Scheme);
-                //await _emailSender.SendEmailAsync(model.Email, "Reset Password",
-                //   "Please reset your password by clicking here: <a href=\"" + callbackUrl + "\">link</a>");
-                //return View("ForgotPasswordConfirmation");
+                result.Status = AccountStatusEnum.RequireConfirmedEmail;
+
+                var emailRequest = new EmailRequestRecord();
+                //For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                //Send an email with this link
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                    new { userId = user.Id, code = code, returnUrl = "" },
+                    protocol: HttpContext.Request.Scheme);
+
+                emailRequest.Subject = "ConfirmEmail";
+                emailRequest.Body = "Please confirm your account by clicking this link: <a href=\"" +
+                                    callbackUrl + "\">link</a>";
+                emailRequest.ToEmail = model.Email;
+                try
+                {
+                    await _emailSender.SendEmailAsync(emailRequest);
+
+                    result.Status = AccountStatusEnum.Succeeded;
+                    return Ok(result);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.InnerException + "_" + e.Message);
+                    result.Errors.Add("RequireConfirmedEmail action throw an error");
+                    return Ok(result);
+                }
+
+
             }
 
             // If we got this far, something failed, redisplay form
-            return View(model);
-        }
+            var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
+            _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+            result.Status = AccountStatusEnum.Invalid;
+            foreach (var error in errors)
+            {
+                result.Errors.Add(error);
+            }
 
-        //
-        // GET: /Account/ForgotPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ForgotPasswordConfirmation()
-        {
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPassword
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPassword(string code = null)
-        {
-            return code == null ? View("Error") : View();
+            return BadRequest(result);
         }
 
         //
@@ -372,56 +384,64 @@ namespace Nitro.Web.Controllers.Auth
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+        public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
         {
+            var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                return View(model);
+                var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
+                _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+                result.Status = AccountStatusEnum.Invalid;
+                foreach (var error in errors)
+                {
+                    result.Errors.Add(error);
+                }
+
+                return BadRequest(result);
             }
 
             var user = await _userManager.FindByEmailAsync(model.Email);
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+                result.Status = AccountStatusEnum.Failed;
+                return Ok(result);
             }
 
-            var result = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
-            if (result.Succeeded)
+            var resetPasswordResult = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
+            if (resetPasswordResult.Succeeded)
             {
-                return RedirectToAction(nameof(AccountController.ResetPasswordConfirmation), "Account");
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
             }
 
-            AddErrors(result);
-            return View();
-        }
-
-        //
-        // GET: /Account/ResetPasswordConfirmation
-        [HttpGet]
-        [AllowAnonymous]
-        public IActionResult ResetPasswordConfirmation()
-        {
-            return View();
+            _logger.LogError("ResetPasswordAsync action does not Succeeded");
+            result.Status = AccountStatusEnum.Failed;
+            result.Errors.Add("ResetPasswordAsync action does not Succeeded");
+            return Ok(result);
         }
 
         //
         // GET: /Account/SendCode
         [HttpGet]
         [AllowAnonymous]
-        public async Task<ActionResult> SendCode(string returnUrl = null, bool rememberMe = false)
+        public async Task<ActionResult> GetTwoFactorProvidersAsync()
         {
+            var result = new AccountResult();
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                return View("Error");
+                _logger.LogWarning("Input data are invalid.; Requested By: " + user.Email);
+                result.Status = AccountStatusEnum.Failed;
+                return Ok(result);
             }
 
             var userFactors = await _userManager.GetValidTwoFactorProvidersAsync(user);
-            var factorOptions = userFactors.Select(purpose => new SelectListItem {Text = purpose, Value = purpose})
+            var factorOptions = userFactors.Select(purpose => new Kernel.Models.SelectListItem { Text = purpose, Value = purpose })
                 .ToList();
-            return View(new SendCodeViewModel
-                {Providers = factorOptions, ReturnUrl = returnUrl, RememberMe = rememberMe});
+            return Ok(new SendCodeModel
+            { Providers = factorOptions });
         }
 
         //
@@ -429,151 +449,177 @@ namespace Nitro.Web.Controllers.Auth
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> SendCode(SendCodeViewModel model)
+        public async Task<IActionResult> SendCode(SendCodeModel model)
         {
+            var result = new AccountResult();
+            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (!ModelState.IsValid)
             {
-                return View();
+                _logger.LogError("Input data are invalid.; Requested By: " + user ?? user.Email);
+                result.Status = AccountStatusEnum.Invalid;
+                result.Errors.Add("");
+
+                return BadRequest(result);
             }
 
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                return View("Error");
+                _logger.LogError("User not found.;");
+                result.Status = AccountStatusEnum.Failed;
+                result.Errors.Add("User not found.; ");
+
+                return BadRequest(result);
             }
 
             if (model.SelectedProvider == "Authenticator")
             {
-                return RedirectToAction(nameof(VerifyAuthenticatorCode),
-                    new {ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe});
+                // The following code protects for brute force attacks against the two factor codes.
+                // If a user enters incorrect codes for a specified amount of time then the user account
+                // will be locked out for a specified amount of time.
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
             }
 
             // Generate the token and send it
             var code = await _userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
             if (string.IsNullOrWhiteSpace(code))
             {
-                return View("Error");
+                _logger.LogError("Token generator returned null.; Requested By: " + user.Email);
+                result.Status = AccountStatusEnum.Failed;
+                result.Errors.Add("Token generator returned null.; Requested By: " + user.Email);
+
+                return BadRequest(result);
             }
 
             var message = "Your security code is: " + code;
             if (model.SelectedProvider == "Email")
             {
-                await _emailSender.SendEmailAsync(await _userManager.GetEmailAsync(user), "Security Code", message);
+                var emailRequest = new EmailRequestRecord()
+                {
+                    ToEmail = await _userManager.GetEmailAsync(user),
+                    Subject = "Security Code",
+                    Body = message
+                };
+
+                try
+                {
+                    await _emailSender.SendEmailAsync(emailRequest);
+
+                    result.Status = AccountStatusEnum.Succeeded;
+                    return Ok(result);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.InnerException + "_" + e.Message);
+                    result.Errors.Add("Send email action throw an error");
+                    return Ok(result);
+                }
             }
             else if (model.SelectedProvider == "Phone")
             {
-                await _smsSender.SendSmsAsync(await _userManager.GetPhoneNumberAsync(user), message);
+                var smsRequest = new SmsRequestRecord()
+                {
+                    ToNumber = await _userManager.GetPhoneNumberAsync(user),
+                    Message = message
+                };
+                try
+                {
+                    await _smsSender.SendSmsAsync(smsRequest);
+
+                    result.Status = AccountStatusEnum.Succeeded;
+                    return Ok(result);
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.InnerException + "_" + e.Message);
+                    result.Errors.Add("Send sms action throw an error");
+                    return Ok(result);
+                }
             }
 
-            return RedirectToAction(nameof(VerifyCode),
-                new {Provider = model.SelectedProvider, ReturnUrl = model.ReturnUrl, RememberMe = model.RememberMe});
+            _logger.LogError("The operation failed.; Requested By: " + user.Email);
+            result.Status = AccountStatusEnum.Failed;
+            result.Errors.Add("The operation failed.; Requested By: " + user.Email);
+
+            return BadRequest(result);
         }
 
-        //
-        // GET: /Account/VerifyCode
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> VerifyCode(string provider, bool rememberMe, string returnUrl = null)
-        {
-            // Require that the user has already logged in via username/password or external login
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
+        ////
+        //// POST: /Account/VerifyAuthenticatorCode
+        //[HttpPost]
+        //[AllowAnonymous]
+        //[ValidateAntiForgeryToken]
+        //public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeModel model)
+        //{
+            //  if (!ModelState.IsValid)
+            //  {
+            //        return View(model);
+            //  }
+            //  var result =
+            //    await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe,
+            //        model.RememberBrowser);
+            //  if (result.Succeeded)
+            //  {
+            //    return RedirectToLocal(model.ReturnUrl);
+            //  }
 
-            return View(new VerifyCodeViewModel {Provider = provider, ReturnUrl = returnUrl, RememberMe = rememberMe});
-        }
+            //  if (result.IsLockedOut)
+            //  {
+            //    _logger.LogWarning(7, "User account locked out.");
+            //    return View("Lockout");
+            //  }
+            //  else
+            //  {
+            //    ModelState.AddModelError(string.Empty, "Invalid code.");
+            //    return View(model);
+            //  }
+        //}
 
-        //
-        // POST: /Account/VerifyCode
+    //
+    // POST: /Account/VerifyCode
+
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyCode(VerifyCodeViewModel model)
+        public async Task<IActionResult> VerifyCode(VerifyCodeModel model)
         {
+            var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                return View(model);
+                _logger.LogError("Input data are invalid.;");
+                result.Status = AccountStatusEnum.Invalid;
+                result.Errors.Add("");
+
+                return BadRequest(result);
             }
 
             // The following code protects for brute force attacks against the two factor codes.
             // If a user enters incorrect codes for a specified amount of time then the user account
             // will be locked out for a specified amount of time.
-            var result = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
+            var signInResult = await _signInManager.TwoFactorSignInAsync(model.Provider, model.Code, model.RememberMe,
                 model.RememberBrowser);
-            if (result.Succeeded)
+            if (signInResult.Succeeded)
             {
-                return RedirectToLocal(model.ReturnUrl);
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
             }
 
-            if (result.IsLockedOut)
+            if (signInResult.IsLockedOut)
             {
-                _logger.LogWarning(7, "User account locked out.");
-                return View("Lockout");
+                result.Status = AccountStatusEnum.IsLockedOut;
+                return Ok(result);
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Invalid code.");
-                return View(model);
-            }
-        }
-
-        //
-        // GET: /Account/VerifyAuthenticatorCode
-        [HttpGet]
-        [AllowAnonymous]
-        public async Task<IActionResult> VerifyAuthenticatorCode(bool rememberMe, string returnUrl = null)
-        {
-            // Require that the user has already logged in via username/password or external login
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
-
-            return View(new VerifyAuthenticatorCodeViewModel {ReturnUrl = returnUrl, RememberMe = rememberMe});
-        }
-
-        //
-        // POST: /Account/VerifyAuthenticatorCode
-        [HttpPost]
-        [AllowAnonymous]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeViewModel model)
-        {
-            if (!ModelState.IsValid)
-            {
-                return View(model);
-            }
-
-            // The following code protects for brute force attacks against the two factor codes.
-            // If a user enters incorrect codes for a specified amount of time then the user account
-            // will be locked out for a specified amount of time.
-            var result =
-                await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe,
-                    model.RememberBrowser);
-            if (result.Succeeded)
-            {
-                return RedirectToLocal(model.ReturnUrl);
-            }
-
-            if (result.IsLockedOut)
-            {
-                _logger.LogWarning(7, "User account locked out.");
-                return View("Lockout");
-            }
-            else
-            {
-                ModelState.AddModelError(string.Empty, "Invalid code.");
-                return View(model);
+                result.Status = AccountStatusEnum.InvalidCode;
+                return Ok(result);
             }
         }
 
         //
         // GET: /Account/UseRecoveryCode
         [HttpGet]
-        [AllowAnonymous]
+        [Authorize]
         public async Task<IActionResult> UseRecoveryCode(string returnUrl = null)
         {
             // Require that the user has already logged in via username/password or external login
@@ -583,7 +629,7 @@ namespace Nitro.Web.Controllers.Auth
                 return View("Error");
             }
 
-            return View(new UseRecoveryCodeViewModel {ReturnUrl = returnUrl});
+            return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
         }
 
         //
@@ -613,7 +659,7 @@ namespace Nitro.Web.Controllers.Auth
         #region Helpers
 
 
-        private Task<ApplicationUser> GetCurrentUserAsync()
+        private Task<User> GetCurrentUserAsync()
         {
             return _userManager.GetUserAsync(HttpContext.User);
         }
