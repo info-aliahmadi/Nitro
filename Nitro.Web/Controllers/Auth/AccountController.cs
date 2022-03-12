@@ -476,7 +476,7 @@ namespace Nitro.Web.Controllers.Auth
                 // The following code protects for brute force attacks against the two factor codes.
                 // If a user enters incorrect codes for a specified amount of time then the user account
                 // will be locked out for a specified amount of time.
-                result.Status = AccountStatusEnum.Succeeded;
+                result.Status = AccountStatusEnum.RequiresTwoFactor;
                 return Ok(result);
             }
 
@@ -544,40 +544,55 @@ namespace Nitro.Web.Controllers.Auth
             return BadRequest(result);
         }
 
-        ////
-        //// POST: /Account/VerifyAuthenticatorCode
-        //[HttpPost]
-        //[AllowAnonymous]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeModel model)
-        //{
-            //  if (!ModelState.IsValid)
-            //  {
-            //        return View(model);
-            //  }
-            //  var result =
-            //    await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe,
-            //        model.RememberBrowser);
-            //  if (result.Succeeded)
-            //  {
-            //    return RedirectToLocal(model.ReturnUrl);
-            //  }
+        /// <summary>
+        /// If Two Factor Authenticator is enabled, the user have to enter 6 digits code by authenticator app
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPost]
+        [AllowAnonymous]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeModel model)
+        {
+            var result = new AccountResult();
+            if (!ModelState.IsValid)
+            {
+                _logger.LogError("Input data are invalid.; Requested By: " + (await GetCurrentUserAsync()).Email);
+                result.Status = AccountStatusEnum.Invalid;
+                result.Errors.Add("");
 
-            //  if (result.IsLockedOut)
-            //  {
-            //    _logger.LogWarning(7, "User account locked out.");
-            //    return View("Lockout");
-            //  }
-            //  else
-            //  {
-            //    ModelState.AddModelError(string.Empty, "Invalid code.");
-            //    return View(model);
-            //  }
-        //}
+                return BadRequest(result);
+            }
+            var signInResult =
+              await _signInManager.TwoFactorAuthenticatorSignInAsync(model.Code, model.RememberMe,
+                  model.RememberBrowser);
+            if (signInResult.Succeeded)
+            {
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
+            }
 
-    //
-    // POST: /Account/VerifyCode
+            if (signInResult.IsLockedOut)
+            {
+                _logger.LogWarning(7, "User account locked out..; Requested By: " + (await GetCurrentUserAsync()).Email);
 
+                result.Status = AccountStatusEnum.IsLockedOut;
+                return Ok(result);
+            }
+            else
+            {
+                _logger.LogWarning("Code is invalid.; Requested By: " + (await GetCurrentUserAsync()).Email);
+                result.Status = AccountStatusEnum.InvalidCode;
+
+                return BadRequest(result);
+            }
+        }
+
+        /// <summary>
+        /// If Two Factor is enabled, the user have to enter code which was sent ti them by email or sms
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
@@ -616,25 +631,11 @@ namespace Nitro.Web.Controllers.Auth
             }
         }
 
-        ////
-        //// GET: /Account/UseRecoveryCode
-        //[HttpGet]
-        //[Authorize]
-        //public async Task<IActionResult> UseRecoveryCode(string returnUrl = null)
-        //{
-        //    var result = new AccountResult();
-        //    // Require that the user has already logged in via username/password or external login
-        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-        //    if (user == null)
-        //    {
-        //        return View("Error");
-        //    }
-
-        //    return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
-        //}
-
-        //
-        // POST: /Account/UseRecoveryCode
+        /// <summary>
+        /// The user can login by Two Factor Recovery code 
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
