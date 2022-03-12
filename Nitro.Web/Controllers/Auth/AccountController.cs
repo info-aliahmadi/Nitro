@@ -616,43 +616,50 @@ namespace Nitro.Web.Controllers.Auth
             }
         }
 
-        //
-        // GET: /Account/UseRecoveryCode
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> UseRecoveryCode(string returnUrl = null)
-        {
-            // Require that the user has already logged in via username/password or external login
-            var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
-            if (user == null)
-            {
-                return View("Error");
-            }
+        ////
+        //// GET: /Account/UseRecoveryCode
+        //[HttpGet]
+        //[Authorize]
+        //public async Task<IActionResult> UseRecoveryCode(string returnUrl = null)
+        //{
+        //    var result = new AccountResult();
+        //    // Require that the user has already logged in via username/password or external login
+        //    var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
+        //    if (user == null)
+        //    {
+        //        return View("Error");
+        //    }
 
-            return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
-        }
+        //    return View(new UseRecoveryCodeViewModel { ReturnUrl = returnUrl });
+        //}
 
         //
         // POST: /Account/UseRecoveryCode
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UseRecoveryCode(UseRecoveryCodeViewModel model)
+        public async Task<IActionResult> UseRecoveryCode(UseRecoveryCodeModel model)
         {
+            var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                return View(model);
+                _logger.LogError("Input data are invalid.;");
+                result.Status = AccountStatusEnum.Invalid;
+                result.Errors.Add("");
+
+                return BadRequest(result);
             }
 
-            var result = await _signInManager.TwoFactorRecoveryCodeSignInAsync(model.Code);
-            if (result.Succeeded)
+            var signInResult = await _signInManager.TwoFactorRecoveryCodeSignInAsync(model.Code);
+            if (signInResult.Succeeded)
             {
-                return RedirectToLocal(model.ReturnUrl);
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
             }
             else
             {
-                ModelState.AddModelError(string.Empty, "Invalid code.");
-                return View(model);
+                result.Status = AccountStatusEnum.InvalidCode;
+                return Ok(result);
             }
         }
 

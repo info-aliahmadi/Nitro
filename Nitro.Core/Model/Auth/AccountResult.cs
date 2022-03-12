@@ -13,6 +13,7 @@ namespace Nitro.Core.Model.Auth
         public AccountStatusEnum Status { get; set; }
 
         public string StatusDescription => Status.Description();
+        public string Message { get; set; }
 
         public IList<string> Errors { get; set; }
     }
