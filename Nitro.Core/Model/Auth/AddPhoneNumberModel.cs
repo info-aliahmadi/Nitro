@@ -7,15 +7,10 @@ using System.Threading.Tasks;
 
 namespace Nitro.Core.Model.Auth
 {
-    public class VerifyAuthenticatorCodeModel
+    public class AddPhoneNumberModel
     {
         [Required]
-        public string Code { get; set; }
-
-        public string ReturnUrl { get; set; }
-
-        public bool RememberBrowser { get; set; }
-
-        public bool RememberMe { get; set; }
+        [Phone]
+        public string PhoneNumber { get; set; }
     }
 }

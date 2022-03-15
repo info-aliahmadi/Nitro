@@ -124,7 +124,7 @@ namespace Nitro.Web.Controllers.Auth
                         {
                             _logger.LogError(e.InnerException + "_" + e.Message);
                             result.Errors.Add("RequireConfirmedEmail action throw an error");
-                            return Ok(result);
+                            return BadRequest(result);
                         }
                     }
 
@@ -252,7 +252,7 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     result.Status = AccountStatusEnum.ExternalLoginFailure;
                     _logger.LogError("External Login Failure for user : {Email}", model.Email);
-                    return Ok(result);
+                    return BadRequest(result);
                 }
 
                 var user = new User { UserName = model.Email, Email = model.Email };
@@ -333,7 +333,7 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     // Don't reveal that the user does not exist or is not confirmed
                     result.Status = AccountStatusEnum.Failed;
-                    return Ok(result);
+                    return BadRequest(result);
                 }
 
                 result.Status = AccountStatusEnum.RequireConfirmedEmail;
@@ -361,7 +361,7 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
                     result.Errors.Add("RequireConfirmedEmail action throw an error");
-                    return Ok(result);
+                    return BadRequest(result);
                 }
 
 
@@ -406,7 +406,7 @@ namespace Nitro.Web.Controllers.Auth
                 // Don't reveal that the user does not exist
                 _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
                 result.Status = AccountStatusEnum.Failed;
-                return Ok(result);
+                return BadRequest(result);
             }
 
             var resetPasswordResult = await _userManager.ResetPasswordAsync(user, model.Code, model.Password);
@@ -419,7 +419,7 @@ namespace Nitro.Web.Controllers.Auth
             _logger.LogError("ResetPasswordAsync action does not Succeeded");
             result.Status = AccountStatusEnum.Failed;
             result.Errors.Add("ResetPasswordAsync action does not Succeeded");
-            return Ok(result);
+            return BadRequest(result);
         }
 
         //
@@ -434,7 +434,7 @@ namespace Nitro.Web.Controllers.Auth
             {
                 _logger.LogWarning("Input data are invalid.; Requested By: " + user.Email);
                 result.Status = AccountStatusEnum.Failed;
-                return Ok(result);
+                return BadRequest(result);
             }
 
             var userFactors = await _userManager.GetValidTwoFactorProvidersAsync(user);
@@ -468,7 +468,7 @@ namespace Nitro.Web.Controllers.Auth
                 result.Status = AccountStatusEnum.Failed;
                 result.Errors.Add("User not found.; ");
 
-                return BadRequest(result);
+                return NotFound(result);
             }
 
             if (model.SelectedProvider == "Authenticator")
@@ -512,7 +512,7 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
                     result.Errors.Add("Send email action throw an error");
-                    return Ok(result);
+                    return BadRequest(result);
                 }
             }
             else if (model.SelectedProvider == "Phone")
@@ -533,7 +533,7 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
                     result.Errors.Add("Send sms action throw an error");
-                    return Ok(result);
+                    return BadRequest(result);
                 }
             }
 

@@ -7,15 +7,9 @@ using System.Threading.Tasks;
 
 namespace Nitro.Core.Model.Auth
 {
-    public class VerifyAuthenticatorCodeModel
+    public class RecoveryCodesModel
     {
         [Required]
-        public string Code { get; set; }
-
-        public string ReturnUrl { get; set; }
-
-        public bool RememberBrowser { get; set; }
-
-        public bool RememberMe { get; set; }
+        public IEnumerable<string> Codes { get; set; }
     }
 }
