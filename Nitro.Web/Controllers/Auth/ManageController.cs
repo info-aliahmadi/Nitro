@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Nitro.Core.Domain.Auth;
 using Nitro.Core.Model.Auth;
@@ -7,6 +8,9 @@ using Nitro.Kernel.Models;
 
 namespace Nitro.Web.Controllers.Auth
 {
+    [AllowAnonymous]
+    [ApiController]
+    [Route("Api/Manage/[controller]")]
     public class ManageController : Controller
     {
         private readonly UserManager<User> _userManager;

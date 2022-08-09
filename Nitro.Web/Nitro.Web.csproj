@@ -9,6 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Views\**" />
+    <Content Remove="Views\**" />
+    <EmbeddedResource Remove="Views\**" />
+    <None Remove="Views\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\Auth\ManageController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Include="..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
@@ -24,10 +35,6 @@
     <ProjectReference Include="..\Nitro.Infrastructure\Nitro.Infrastructure.csproj" />
     <ProjectReference Include="..\Nitro.Migration\Nitro.Migrations.csproj" />
     <ProjectReference Include="..\Nitro.Service\Nitro.Service.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Views\Auth\" />
   </ItemGroup>
 
 </Project>

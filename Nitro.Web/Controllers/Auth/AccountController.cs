@@ -156,7 +156,7 @@ namespace Nitro.Web.Controllers.Auth
             return BadRequest(result);
         }
 
-        [HttpPost]
+        [HttpPost(nameof(LogOff))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> LogOff()
         {
@@ -167,10 +167,10 @@ namespace Nitro.Web.Controllers.Auth
             return Ok(result);
         }
 
-        [HttpPost]
+        [HttpPost(nameof(ExternalLogin))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public IActionResult ExternalLogin(string provider, string returnUrl = null)
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
             // Request a redirect to the external login provider.
             var redirectUrl = Url.Action("ExternalLoginCallback", "Account", new { ReturnUrl = returnUrl });
@@ -178,7 +178,7 @@ namespace Nitro.Web.Controllers.Auth
             return Challenge(properties, provider);
         }
 
-        [HttpGet]
+        [HttpGet(nameof(ExternalLoginCallback))]
         [AllowAnonymous]
         public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
         {
@@ -238,7 +238,7 @@ namespace Nitro.Web.Controllers.Auth
             }
         }
 
-        [HttpPost]
+        [HttpPost(nameof(ExternalLoginConfirmation))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExternalLoginConfirmation(ExternalLoginConfirmationModel model)
@@ -297,7 +297,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // GET: /Account/ConfirmEmail
-        [HttpGet]
+        [HttpGet(nameof(ConfirmEmail))]
         [AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string code, string returnUrl)
         {
@@ -320,7 +320,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // POST: /Account/ForgotPassword
-        [HttpPost]
+        [HttpPost(nameof(ForgotPassword))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ForgotPassword(ForgotPasswordModel model)
@@ -381,7 +381,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // POST: /Account/ResetPassword
-        [HttpPost]
+        [HttpPost(nameof(ResetPassword))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(ResetPasswordModel model)
@@ -424,7 +424,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // GET: /Account/SendCode
-        [HttpGet]
+        [HttpGet(nameof(GetTwoFactorProvidersAsync))]
         [AllowAnonymous]
         public async Task<ActionResult> GetTwoFactorProvidersAsync()
         {
@@ -446,7 +446,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // POST: /Account/SendCode
-        [HttpPost]
+        [HttpPost(nameof(SendCode))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SendCode(SendCodeModel model)
@@ -549,7 +549,7 @@ namespace Nitro.Web.Controllers.Auth
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost(nameof(VerifyAuthenticatorCode))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyAuthenticatorCode(VerifyAuthenticatorCodeModel model)
@@ -593,7 +593,7 @@ namespace Nitro.Web.Controllers.Auth
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost(nameof(VerifyCode))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyCode(VerifyCodeModel model)
@@ -636,7 +636,7 @@ namespace Nitro.Web.Controllers.Auth
         /// </summary>
         /// <param name="model"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost(nameof(UseRecoveryCode))]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UseRecoveryCode(UseRecoveryCodeModel model)
