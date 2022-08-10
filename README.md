@@ -13,3 +13,4 @@ The essential features that every project needs:
 8. Bulk Insert
 9. Localization
 10. Blob storage
+11. Setting
