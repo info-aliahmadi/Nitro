@@ -10,7 +10,7 @@ namespace Nitro.Web.Controllers.Auth
 {
     [AllowAnonymous]
     [ApiController]
-    [Route("Api/Manage/[controller]")]
+    [Route("Manage/[controller]")]
     public class ManageController : Controller
     {
         private readonly UserManager<User> _userManager;
@@ -34,7 +34,7 @@ namespace Nitro.Web.Controllers.Auth
         }
         //
         // POST: /Manage/RemoveLogin
-        [HttpPost]
+        [HttpPost(nameof(RemoveLogin))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemoveLogin(RemoveLoginModel account)
         {
@@ -56,7 +56,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // POST: /Manage/AddPhoneNumber
-        [HttpPost]
+        [HttpPost(nameof(AddPhoneNumber))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPhoneNumber(AddPhoneNumberModel model)
         {
@@ -111,7 +111,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // POST: /Manage/ResetAuthenticatorKey
-        [HttpPost]
+        [HttpPost(nameof(ResetAuthenticatorKey))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetAuthenticatorKey()
         {
@@ -134,7 +134,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // POST: /Manage/GenerateRecoveryCode
-        [HttpPost]
+        [HttpPost(nameof(GenerateRecoveryCode))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GenerateRecoveryCode()
         {
@@ -157,7 +157,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // POST: /Manage/EnableTwoFactorAuthentication
-        [HttpPost]
+        [HttpPost(nameof(EnableTwoFactorAuthentication))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EnableTwoFactorAuthentication()
         {
@@ -182,7 +182,7 @@ namespace Nitro.Web.Controllers.Auth
 
         //
         // POST: /Manage/DisableTwoFactorAuthentication
-        [HttpPost]
+        [HttpPost(nameof(DisableTwoFactorAuthentication))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DisableTwoFactorAuthentication()
         {
@@ -205,7 +205,7 @@ namespace Nitro.Web.Controllers.Auth
             return Ok(result);
         }
         // GET: /Manage/VerifyPhoneNumber
-        [HttpGet]
+        [HttpGet(nameof(VerifyPhoneNumber))]
         public async Task<IActionResult> VerifyPhoneNumber(string phoneNumber)
         {
             var result = new AccountResult();
@@ -232,7 +232,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // POST: /Manage/VerifyPhoneNumber
-        [HttpPost]
+        [HttpPost(nameof(VerifyPhoneNumber))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> VerifyPhoneNumber(VerifyPhoneNumberModel model)
         {
@@ -277,7 +277,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // GET: /Manage/RemovePhoneNumber
-        [HttpPost]
+        [HttpPost(nameof(RemovePhoneNumber))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePhoneNumber()
         {
@@ -310,7 +310,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         // POST: /Manage/ChangePassword
-        [HttpPost]
+        [HttpPost(nameof(ChangePassword))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordModel model)
         {
@@ -356,7 +356,7 @@ namespace Nitro.Web.Controllers.Auth
             return BadRequest(result);
         }
         // POST: /Manage/SetPassword
-        [HttpPost]
+        [HttpPost(nameof(SetPassword))]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SetPassword(SetPasswordModel model)
         {
@@ -402,7 +402,7 @@ namespace Nitro.Web.Controllers.Auth
         }
 
         //GET: /Manage/ManageLogins
-        [HttpGet]
+        [HttpGet(nameof(ManageLogins))]
         public async Task<IActionResult> ManageLogins()
         {
             var result = new AccountResult();
@@ -429,7 +429,7 @@ namespace Nitro.Web.Controllers.Auth
             });
         }
         // POST: /Manage/LinkLogin
-        [HttpPost]
+        [HttpPost(nameof(LinkLogin))]
         [ValidateAntiForgeryToken]
         public IActionResult LinkLogin(string provider)
         {
@@ -439,7 +439,7 @@ namespace Nitro.Web.Controllers.Auth
             return Challenge(properties, provider);
         }
         // GET: /Manage/LinkLoginCallback
-        [HttpGet]
+        [HttpGet(nameof(RemoveLogin))]
         public async Task<ActionResult> LinkLoginCallback()
         {
             var result = new AccountResult();
