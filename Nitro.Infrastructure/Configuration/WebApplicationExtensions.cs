@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-
+using Nitro.Infrastructure.localization;
 
 namespace Nitro.Infrastructure.Configuration
 {
@@ -31,6 +31,8 @@ namespace Nitro.Infrastructure.Configuration
             app.UseAuthorization();
 
             app.MapControllers();
+
+            app.UseLocalization();
 
         }
     }

@@ -1,4 +1,5 @@
 using Nitro.Infrastructure.Configuration;
+using Nitro.Infrastructure.localization;
 using Nitro.Infrastructure.Logs;
 using Serilog;
 using System.Reflection;

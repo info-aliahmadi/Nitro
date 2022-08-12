@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Nitro.Infrastructure.Cache;
 using Nitro.Infrastructure.Logs;
+using Nitro.Infrastructure.localization;
 
 namespace Nitro.Infrastructure.Configuration
 {
@@ -31,6 +32,8 @@ namespace Nitro.Infrastructure.Configuration
             services.AddCacheProvider(builder.Configuration);
 
             services.AddControllerConfig();
+
+            services.AddlocalizationConfig();
 
             services.AddSwaggerGenConfig();
 
