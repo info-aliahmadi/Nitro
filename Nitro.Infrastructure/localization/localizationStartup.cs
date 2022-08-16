@@ -19,9 +19,10 @@ namespace Nitro.Infrastructure.localization
             IList<CultureInfo> supportedCultures = new List<CultureInfo>
             {
                 new CultureInfo("en-US"),
+                new CultureInfo("en-GB"),
                 new CultureInfo("de-DE"),
                 new CultureInfo("fr"),
-                new CultureInfo("en-GB")
+                new CultureInfo("fa")
             };
 
             var requestLocalizationOptions = new RequestLocalizationOptions
@@ -31,9 +32,14 @@ namespace Nitro.Infrastructure.localization
                 SupportedUICultures = supportedCultures,
                 RequestCultureProviders = new List<IRequestCultureProvider>
                 {
-                    new CookieRequestCultureProvider(),
-                    new AcceptLanguageHeaderRequestCultureProvider(),
                     new QueryStringRequestCultureProvider()
+                    {
+                        QueryStringKey = "lang",
+                        UIQueryStringKey ="ui-lang"
+
+                    },
+                    new AcceptLanguageHeaderRequestCultureProvider(),
+                    new CookieRequestCultureProvider(),
                 }
             };
 

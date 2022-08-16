@@ -9,9 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Resources\Controllers\Auth\**" />
+    <Compile Remove="Resources\Controllers\Cms\**" />
     <Compile Remove="Views\**" />
+    <Content Remove="Resources\Controllers\Auth\**" />
+    <Content Remove="Resources\Controllers\Cms\**" />
     <Content Remove="Views\**" />
+    <EmbeddedResource Remove="Resources\Controllers\Auth\**" />
+    <EmbeddedResource Remove="Resources\Controllers\Cms\**" />
     <EmbeddedResource Remove="Views\**" />
+    <None Remove="Resources\Controllers\Auth\**" />
+    <None Remove="Resources\Controllers\Cms\**" />
     <None Remove="Views\**" />
   </ItemGroup>
 

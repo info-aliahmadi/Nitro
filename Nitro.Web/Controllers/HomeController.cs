@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
+using Nitro.Infrastructure.localization;
 
 namespace Nitro.Web.Controllers
 {
@@ -15,12 +17,19 @@ namespace Nitro.Web.Controllers
 
         private readonly ILogger<HomeController> _logger;
 
-        public HomeController(ILogger<HomeController> logger)
+        private readonly IStringLocalizer<HomeController> _localizer;
+        private readonly IStringLocalizer<SharedResource> _sharedlocalizer;
+
+        public HomeController(ILogger<HomeController> logger,
+            IStringLocalizer<HomeController> localizer,
+            IStringLocalizer<SharedResource> sharedlocalizer)
         {
             _logger = logger;
+            _localizer = localizer;
+            _sharedlocalizer = sharedlocalizer;
         }
 
-        [HttpGet(Name = "GetWeatherForecast")]
+        [HttpGet("GetWeatherForecast")]
         public IEnumerable<WeatherForecast> Get()
         {
             _logger.LogInformation("First Log");
@@ -31,6 +40,13 @@ namespace Nitro.Web.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+        }
+        [AllowAnonymous]
+        [HttpGet("TestLocalization")]
+        public string TestLocalization()
+        {
+            var str = _sharedlocalizer["Hello"];
+            return str;
         }
     }
 }
