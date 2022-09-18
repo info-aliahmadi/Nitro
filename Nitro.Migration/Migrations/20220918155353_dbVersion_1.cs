@@ -10,10 +10,14 @@ namespace Nitro.Migrations.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.EnsureSchema(
+                name: "Cms");
+
+            migrationBuilder.EnsureSchema(
                 name: "Auth");
 
             migrationBuilder.CreateTable(
                 name: "Category",
+                schema: "Cms",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -95,6 +99,7 @@ namespace Nitro.Migrations.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Author",
+                schema: "Cms",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -211,6 +216,7 @@ namespace Nitro.Migrations.Migrations
 
             migrationBuilder.CreateTable(
                 name: "Content",
+                schema: "Cms",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -225,6 +231,7 @@ namespace Nitro.Migrations.Migrations
                     table.ForeignKey(
                         name: "FK_Content_Author_AuthorId",
                         column: x => x.AuthorId,
+                        principalSchema: "Cms",
                         principalTable: "Author",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -232,6 +239,7 @@ namespace Nitro.Migrations.Migrations
 
             migrationBuilder.CreateTable(
                 name: "CategoryContent",
+                schema: "Cms",
                 columns: table => new
                 {
                     CategoryId = table.Column<int>(type: "int", nullable: false),
@@ -243,12 +251,14 @@ namespace Nitro.Migrations.Migrations
                     table.ForeignKey(
                         name: "FK_CategoryContent_Category_CategoryId",
                         column: x => x.CategoryId,
+                        principalSchema: "Cms",
                         principalTable: "Category",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CategoryContent_Content_ContentId",
                         column: x => x.ContentId,
+                        principalSchema: "Cms",
                         principalTable: "Content",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -256,16 +266,19 @@ namespace Nitro.Migrations.Migrations
 
             migrationBuilder.CreateIndex(
                 name: "IX_Author_UserId",
+                schema: "Cms",
                 table: "Author",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_CategoryContent_ContentId",
+                schema: "Cms",
                 table: "CategoryContent",
                 column: "ContentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Content_AuthorId",
+                schema: "Cms",
                 table: "Content",
                 column: "AuthorId");
 
@@ -319,7 +332,8 @@ namespace Nitro.Migrations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "CategoryContent");
+                name: "CategoryContent",
+                schema: "Cms");
 
             migrationBuilder.DropTable(
                 name: "RoleClaim",
@@ -342,17 +356,20 @@ namespace Nitro.Migrations.Migrations
                 schema: "Auth");
 
             migrationBuilder.DropTable(
-                name: "Category");
+                name: "Category",
+                schema: "Cms");
 
             migrationBuilder.DropTable(
-                name: "Content");
+                name: "Content",
+                schema: "Cms");
 
             migrationBuilder.DropTable(
                 name: "Role",
                 schema: "Auth");
 
             migrationBuilder.DropTable(
-                name: "Author");
+                name: "Author",
+                schema: "Cms");
 
             migrationBuilder.DropTable(
                 name: "User",

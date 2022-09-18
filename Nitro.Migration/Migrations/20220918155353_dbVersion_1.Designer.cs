@@ -12,8 +12,8 @@ using Nitro.Migrations;
 namespace Nitro.Migrations.Migrations
 {
     [DbContext(typeof(MigrationContext))]
-    [Migration("20220127111903_dbVersion_1.0")]
-    partial class dbVersion_10
+    [Migration("20220918155353_dbVersion_1")]
+    partial class dbVersion_1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -36,7 +36,7 @@ namespace Nitro.Migrations.Migrations
 
                     b.HasIndex("ContentId");
 
-                    b.ToTable("CategoryContent");
+                    b.ToTable("CategoryContent", "Cms");
                 });
 
             modelBuilder.Entity("Nitro.Core.Data.Domain.Author", b =>
@@ -60,7 +60,7 @@ namespace Nitro.Migrations.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Author");
+                    b.ToTable("Author", "Cms");
                 });
 
             modelBuilder.Entity("Nitro.Core.Data.Domain.Category", b =>
@@ -77,7 +77,7 @@ namespace Nitro.Migrations.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Category");
+                    b.ToTable("Category", "Cms");
                 });
 
             modelBuilder.Entity("Nitro.Core.Data.Domain.Content", b =>
@@ -103,7 +103,7 @@ namespace Nitro.Migrations.Migrations
 
                     b.HasIndex("AuthorId");
 
-                    b.ToTable("Content");
+                    b.ToTable("Content", "Cms");
                 });
 
             modelBuilder.Entity("Nitro.Core.Domain.Auth.Role", b =>

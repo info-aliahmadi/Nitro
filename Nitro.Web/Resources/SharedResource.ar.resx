@@ -117,7 +117,91 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Hello" xml:space="preserve">
-    <value>سلام</value>
+  <data name="Code is invalid.; Requested By: {0}" xml:space="preserve">
+    <value>الرمز غير صالح.؛ مطلوب من قبل: {0}</value>
+  </data>
+  <data name="Could not get info from an external provider" xml:space="preserve">
+    <value>لا يمكن استرداد المعلومات من موفر خارجي</value>
+  </data>
+  <data name="Email or password is invalid.; Requested By: {0}" xml:space="preserve">
+    <value>البريد الإلكتروني أو كلمة المرور غير صالحة. مطلوب بواسطة: {0}</value>
+  </data>
+  <data name="Error from external provider: {0}" xml:space="preserve">
+    <value>خطأ من الموفر الخارجي: {0}</value>
+  </data>
+  <data name="External Login Failure for user: {0}" xml:space="preserve">
+    <value>فشل تسجيل الدخول الخارجي للمستخدم: {0}</value>
+  </data>
+  <data name="Failed to verify phone number" xml:space="preserve">
+    <value>فشل التحقق من رقم الهاتف</value>
+  </data>
+  <data name="Input data are invalid.; Requested By: {0}" xml:space="preserve">
+    <value>بيانات الإدخال غير صالحة. مطلوب بواسطة: {0}</value>
+  </data>
+  <data name="Invalid login attempt." xml:space="preserve">
+    <value>محاولة تسجيل الدخول غير صالحة.</value>
+  </data>
+  <data name="Please confirm your account by clicking this link: &lt;a href='{0}'&gt;link&lt;/a&gt;" xml:space="preserve">
+    <value>يرجى التحقق من حسابك بالنقر على هذا الرابط: &lt;a href='{0}'&gt; رابط &lt;/a&gt;</value>
+  </data>
+  <data name="Redirect the user {0} to ExternalLoginConfirmation" xml:space="preserve">
+    <value>أعد توجيه المستخدم {0} إلى ExternalLoginConfirmation</value>
+  </data>
+  <data name="Security Code" xml:space="preserve">
+    <value>رمز الحماية</value>
+  </data>
+  <data name="Send email action throws an error" xml:space="preserve">
+    <value>كان هناك خطأ في إرسال البريد الإلكتروني</value>
+  </data>
+  <data name="Send sms action throws an error" xml:space="preserve">
+    <value>حدث خطأ أثناء إرسال الرسائل القصيرة</value>
+  </data>
+  <data name="The operation failed.; Requested By: {0}" xml:space="preserve">
+    <value>فشلت العملية.؛ مطلوب من قبل: {0}</value>
+  </data>
+  <data name="The user could not create a new account after external login.;" xml:space="preserve">
+    <value>لا يمكن للمستخدم إنشاء حساب مستخدم جديد بعد تسجيل الدخول الخارجي.</value>
+  </data>
+  <data name="The user could not create a new account.; Requested By: {0}" xml:space="preserve">
+    <value>لا يمكن للمستخدم إنشاء حساب جديد. مطلوب بواسطة: {0}</value>
+  </data>
+  <data name="The user created a new account with the password." xml:space="preserve">
+    <value>قام المستخدم بإنشاء حساب جديد بكلمة مرور.</value>
+  </data>
+  <data name="The user logged out." xml:space="preserve">
+    <value>تم تسجيل خروج المستخدم.</value>
+  </data>
+  <data name="Token generator returned null.; Requested By: {0}" xml:space="preserve">
+    <value>تم إبطال منشئ الرمز المميز. مطلوب بواسطة: {0}</value>
+  </data>
+  <data name="User account locked out..; Requested By: {0}" xml:space="preserve">
+    <value>حساب المستخدم مغلق ..؛ مطلوب من قبل: {0}</value>
+  </data>
+  <data name="User confirmed the code.; Requested By: {0}" xml:space="preserve">
+    <value>أكد المستخدم الرمز. مطلوب بواسطة: {0}</value>
+  </data>
+  <data name="User created an account using {0} provider; Requested By: {1}" xml:space="preserve">
+    <value>أنشأ المستخدم حسابًا باستخدام الموفر {0}. مطلوب بواسطة: {1}</value>
+  </data>
+  <data name="User logged in with {0} provider." xml:space="preserve">
+    <value>تم تسجيل دخول المستخدم مع الموفر {0}.</value>
+  </data>
+  <data name="User logged in with {0}." xml:space="preserve">
+    <value>تم تسجيل دخول المستخدم باستخدام {0}.</value>
+  </data>
+  <data name="User not found.;" xml:space="preserve">
+    <value>المستخدم ليس موجود.</value>
+  </data>
+  <data name="Your security code is:" xml:space="preserve">
+    <value>رمز الأمان الخاص بك هو:</value>
+  </data>
+  <data name="{0} action does not Succeeded" xml:space="preserve">
+    <value>فشلت العملية {0}</value>
+  </data>
+  <data name="{0} action throws an error" xml:space="preserve">
+    <value>ينشئ الإجراء {0} خطأ</value>
+  </data>
+  <data name="{0}; Requested By: {1}" xml:space="preserve">
+    <value>{0} ؛ مطلوب بواسطة: {1}</value>
   </data>
 </root>

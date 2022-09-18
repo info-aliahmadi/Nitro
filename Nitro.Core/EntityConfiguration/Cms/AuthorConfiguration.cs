@@ -9,6 +9,7 @@ namespace Nitro.Core.Data.Mapping.Cms
     {
         public void Configure(EntityTypeBuilder<Author> builder)
         {
+            builder.ToTable("Author", "Cms");
             builder.HasKey(o => o.Id);
         }
     }

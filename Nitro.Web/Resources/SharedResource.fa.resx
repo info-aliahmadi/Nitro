@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Code is invalid.; Requested By: {0}" xml:space="preserve">
-    <value />
+    <value>کد نامعتبر است. درخواست شده توسط: {0}</value>
   </data>
   <data name="Could not get info from an external provider" xml:space="preserve">
     <value>نمی توان اطلاعات را از یک ارائه دهنده خارجی دریافت کرد</value>
@@ -131,6 +131,9 @@
   </data>
   <data name="External Login Failure for user: {0}" xml:space="preserve">
     <value>عدم موفقیت ورود به سیستم خارجی برای کاربر: {0}</value>
+  </data>
+  <data name="Failed to verify phone number" xml:space="preserve">
+    <value>شماره تلفن تأیید نشد</value>
   </data>
   <data name="Input data are invalid.; Requested By: {0}" xml:space="preserve">
     <value>داده های ورودی نامعتبر است. درخواست شده توسط: {0}</value>
@@ -154,7 +157,7 @@
     <value>ارسال پیامک با خطا مواجه شد</value>
   </data>
   <data name="The operation failed.; Requested By: {0}" xml:space="preserve">
-    <value />
+    <value>عملیات شکست خورد. درخواست شده توسط: {0}</value>
   </data>
   <data name="The user could not create a new account after external login.;" xml:space="preserve">
     <value>کاربر نمی تواند پس از ورود خارجی یک حساب کاربری جدید ایجاد کند.</value>
@@ -172,7 +175,7 @@
     <value>مولد توکن باطل شد. درخواست شده توسط: {0}</value>
   </data>
   <data name="User account locked out..; Requested By: {0}" xml:space="preserve">
-    <value />
+    <value>حساب کاربری قفل شد..; درخواست شده توسط: {0}</value>
   </data>
   <data name="User confirmed the code.; Requested By: {0}" xml:space="preserve">
     <value>کاربر کد را تایید کرد. درخواست شده توسط: {0}</value>
