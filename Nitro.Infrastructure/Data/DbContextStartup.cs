@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using EFCoreSecondLevelCacheInterceptor;
 
 namespace Nitro.Infrastructure.Data
 {
@@ -22,8 +23,10 @@ namespace Nitro.Infrastructure.Data
             //if it is too low, DbContext instances will be constantly created and disposed,degrading performance.
             //Setting it too high may needlessly consume memory as
             //unused DbContext instances are maintained in the pool.
-            services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString)); // the default pool size in 1024 
+            services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
+                options.UseSqlServer(connectionString)
+                    .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>())
+            ); // the default pool size in 1024 
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
