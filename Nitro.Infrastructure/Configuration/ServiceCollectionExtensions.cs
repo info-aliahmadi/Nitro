@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 using Nitro.Infrastructure.Cache;
 using Nitro.Infrastructure.Logs;
 using Nitro.Infrastructure.localization;
+using Nitro.Infrastructure.ServiceRegistrar;
+using Nitro.Infrastructure.Setting;
 
 namespace Nitro.Infrastructure.Configuration
 {
@@ -25,15 +27,19 @@ namespace Nitro.Infrastructure.Configuration
         {
             builder.AddSerilogConfig();
 
+            services.AddCacheProvider(builder.Configuration);
+
             services.AddDbContextConfig(builder.Configuration);
 
             services.AddIdentityConfig();
 
-            services.AddCacheProvider(builder.Configuration);
-
             services.AddControllerConfig();
 
             services.AddlocalizationConfig();
+
+            builder.AddSettingConfig();
+
+            services.AddServices();
 
             services.AddSwaggerGenConfig();
 

@@ -8,6 +8,10 @@ using Nitro.Core.Model.Auth;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Models;
 using System.Security.Claims;
+using EFCoreSecondLevelCacheInterceptor;
+using Nitro.Core.Data.Domain;
+using Nitro.Kernel.Interfaces.Data;
+using Nitro.Service.MessageSender;
 
 namespace Nitro.Web.Controllers.Auth
 {
@@ -20,6 +24,7 @@ namespace Nitro.Web.Controllers.Auth
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
+        private readonly IRepository _repository;
         private readonly IStringLocalizer<SharedResource> _sharedlocalizer;
 
         public AccountController(
@@ -28,12 +33,14 @@ namespace Nitro.Web.Controllers.Auth
             IEmailSender emailSender,
             ISmsSender smsSender,
             ILoggerFactory loggerFactory,
+            IRepository repository,
             IStringLocalizer<SharedResource> sharedlocalizer)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
             _smsSender = smsSender;
+            _repository = repository;
             _logger = loggerFactory.CreateLogger<AccountController>();
 
             _sharedlocalizer = sharedlocalizer;
@@ -46,43 +53,73 @@ namespace Nitro.Web.Controllers.Auth
             var result = new AccountResult();
             if (ModelState.IsValid)
             {
-                try
+                var user = new User
+                    {DOB = DateTime.Now, Name = "admin", UserName = "admin", Email = "admin@admin.com"};
+                var isExist = _repository.Table<User>().Any(x => x.UserName == "admin");
+                if (!isExist)
                 {
-                    // This doesn't count login failures towards account lockout
-                    // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                    var signInResult = await _signInManager.(model.Email, model.Password,
-                        model.RememberMe, lockoutOnFailure: false);
-                    if (signInResult.Succeeded)
+                    var identityResult = await _userManager.CreateAsync(user, "admin");
+                    if (identityResult.Succeeded)
                     {
-                        result.Status = AccountStatusEnum.Succeeded;
-                        _logger.LogInformation(_sharedlocalizer["User logged in with {0}."], model.Email);
-                        return Ok(result);
+                        if (_userManager.Options.SignIn.RequireConfirmedEmail)
+                        {
+                            result.Status = AccountStatusEnum.RequireConfirmedEmail;
+                            var emailRequest = new EmailRequestRecord();
+                            //For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                            //Send an email with this link
+                            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                            var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                                new {userId = user.Id, code = code, returnUrl = ""},
+                                protocol: HttpContext.Request.Scheme);
+
+                            emailRequest.Subject = _sharedlocalizer["ConfirmEmail"];
+                            emailRequest.Body =
+                                string.Format(
+                                    _sharedlocalizer[
+                                        "Please confirm your account by clicking this link: <a href='{0}'>link</a>"],
+                                    callbackUrl);
+                            emailRequest.ToEmail = "admin@admin.com";
+                            try
+                            {
+                                await _emailSender.SendEmailAsync(emailRequest);
+
+                                result.Status = AccountStatusEnum.Succeeded;
+                                return Ok(result);
+                            }
+                            catch (Exception e)
+                            {
+                                _logger.LogError(e.InnerException + "_" + e.Message);
+                                result.Errors.Add(string.Format(_sharedlocalizer["{0} action throws an error"]));
+                                return BadRequest(result);
+                            }
+                        }
                     }
 
-                    if (signInResult.RequiresTwoFactor)
+                    foreach (var error in identityResult.Errors)
                     {
-                        result.Status = AccountStatusEnum.RequiresTwoFactor;
-                        return Ok(result);
+                        _logger.LogError(_sharedlocalizer["{0}; Requested By: {1}"], error.Description,
+                            "admin@admin.com");
+                        result.Errors.Add(error.Description);
                     }
 
-                    if (signInResult.IsLockedOut)
-                    {
-                        result.Status = AccountStatusEnum.IsLockedOut;
-                        return Ok(result);
-                    }
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e.InnerException + "_" + e.Message);
+                    _logger.LogError(_sharedlocalizer["The user could not create a new account.; Requested By: {0}"],
+                        "admin@admin.com");
                     result.Status = AccountStatusEnum.Failed;
-                    result.Errors.Add(_sharedlocalizer["Invalid login attempt."]);
+
                     return BadRequest(result);
                 }
+
+
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                _logger.LogInformation(3,
+                    _sharedlocalizer["The user created a new account with the password."]);
+                result.Status = AccountStatusEnum.Succeeded;
+                return Ok(result);
+
             }
 
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-
-            _logger.LogWarning(_sharedlocalizer["Email or password are invalid.; Requested By: {0} "], model.Email);
+            _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: {0}"], "admin@admin.com");
             result.Status = AccountStatusEnum.Invalid;
             foreach (var error in errors)
             {
@@ -90,6 +127,15 @@ namespace Nitro.Web.Controllers.Auth
             }
 
             return BadRequest(result);
+        }
+
+
+        [HttpGet(nameof(Test))]
+        [AllowAnonymous]
+        public IActionResult Test()
+        {
+            var result = _repository.Table<Author>().Cacheable().ToList();
+            return Ok(result);
         }
 
         [HttpPost(nameof(Login))]

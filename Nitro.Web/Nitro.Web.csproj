@@ -1,44 +1,45 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <UserSecretsId>5673470c-e79c-42db-87ed-5f3661f1fe61</UserSecretsId>
-    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<UserSecretsId>5673470c-e79c-42db-87ed-5f3661f1fe61</UserSecretsId>
+		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="Resources\Controllers\Auth\**" />
-    <Compile Remove="Resources\Controllers\Cms\**" />
-    <Compile Remove="Views\**" />
-    <Content Remove="Resources\Controllers\Auth\**" />
-    <Content Remove="Resources\Controllers\Cms\**" />
-    <Content Remove="Views\**" />
-    <EmbeddedResource Remove="Resources\Controllers\Auth\**" />
-    <EmbeddedResource Remove="Resources\Controllers\Cms\**" />
-    <EmbeddedResource Remove="Views\**" />
-    <None Remove="Resources\Controllers\Auth\**" />
-    <None Remove="Resources\Controllers\Cms\**" />
-    <None Remove="Views\**" />
-  </ItemGroup>
+	<ItemGroup>
+		<Compile Remove="Resources\Controllers\Auth\**" />
+		<Compile Remove="Resources\Controllers\Cms\**" />
+		<Compile Remove="Views\**" />
+		<Content Remove="Resources\Controllers\Auth\**" />
+		<Content Remove="Resources\Controllers\Cms\**" />
+		<Content Remove="Views\**" />
+		<EmbeddedResource Remove="Resources\Controllers\Auth\**" />
+		<EmbeddedResource Remove="Resources\Controllers\Cms\**" />
+		<EmbeddedResource Remove="Views\**" />
+		<None Remove="Resources\Controllers\Auth\**" />
+		<None Remove="Resources\Controllers\Cms\**" />
+		<None Remove="Views\**" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
+	<ItemGroup>
+		<None Include="..\.editorconfig" Link=".editorconfig" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="EasyCaching.InMemory" Version="1.6.1" />
+		<PackageReference Include="EasyCaching.Redis" Version="1.6.1" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.1">
+			<PrivateAssets>all</PrivateAssets>
+			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		</PackageReference>
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Nitro.Infrastructure\Nitro.Infrastructure.csproj" />
-    <ProjectReference Include="..\Nitro.Migration\Nitro.Migrations.csproj" />
-    <ProjectReference Include="..\Nitro.Service\Nitro.Service.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Nitro.Infrastructure\Nitro.Infrastructure.csproj" />
+		<ProjectReference Include="..\Nitro.Migration\Nitro.Migrations.csproj" />
+	</ItemGroup>
 
 </Project>

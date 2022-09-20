@@ -5,6 +5,7 @@ using Nitro.Core.Domain.Auth;
 using Nitro.Infrastructure.Data;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Nitro.Infrastructure.Security
 {
@@ -18,7 +19,7 @@ namespace Nitro.Infrastructure.Security
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
 
-            services.Configuration.GetSection("SmtpSetting").Get<SmtpSetting>()
+    
 
             services.AddAuthentication()
                 .AddCookie(options =>
@@ -50,12 +51,12 @@ namespace Nitro.Infrastructure.Security
             services.Configure<IdentityOptions>(options =>
             {
                 // Password settings.
-                options.Password.RequireDigit = true;
-                options.Password.RequireLowercase = true;
-                options.Password.RequireNonAlphanumeric = true;
-                options.Password.RequireUppercase = true;
-                options.Password.RequiredLength = 6;
-                options.Password.RequiredUniqueChars = 1;
+                options.Password.RequireDigit = false;
+                options.Password.RequireLowercase = false;
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequireUppercase = false;
+                options.Password.RequiredLength = 5;
+                options.Password.RequiredUniqueChars = 0;
 
                 // Lockout settings.
                 options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
@@ -71,6 +72,23 @@ namespace Nitro.Infrastructure.Security
                 options.SignIn.RequireConfirmedEmail = false;
                 options.SignIn.RequireConfirmedPhoneNumber = false;
             });
+
+            // Hosting doesn't add IHttpContextAccessor by default
+            services.AddHttpContextAccessor();
+            // Identity services
+            services.TryAddScoped<IUserValidator<User>, UserValidator<User>>();
+            services.TryAddScoped<IPasswordValidator<User>, PasswordValidator<User>>();
+            services.TryAddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+            services.TryAddScoped<ILookupNormalizer, UpperInvariantLookupNormalizer>();
+            services.TryAddScoped<IRoleValidator<Role>, RoleValidator<Role>>();
+            // No interface for the error describer so we can add errors without rev'ing the interface
+            services.TryAddScoped<IdentityErrorDescriber>();
+            services.TryAddScoped<ISecurityStampValidator, SecurityStampValidator<User>>();
+            services.TryAddScoped<ITwoFactorSecurityStampValidator, TwoFactorSecurityStampValidator<User>>();
+            services.TryAddScoped<IUserClaimsPrincipalFactory<User>, UserClaimsPrincipalFactory<User, Role>>();
+            services.TryAddScoped<UserManager<User>>();
+            services.TryAddScoped<SignInManager<User>>();
+            services.TryAddScoped<RoleManager<Role>>();
 
         }
     }

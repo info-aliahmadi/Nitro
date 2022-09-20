@@ -204,4 +204,8 @@
   <data name="{0}; Requested By: {1}" xml:space="preserve">
     <value>{0}؛ درخواست شده توسط: {1}</value>
   </data>
+  <data name="Email or password are invalid.; Requested By: {0} " xml:space="preserve">
+	  <value>Email or password are invalid.; Requested By: {0} </value>
+	  <comment>Email or password are invalid.; Requested By: {0} </comment>
+  </data>
 </root>

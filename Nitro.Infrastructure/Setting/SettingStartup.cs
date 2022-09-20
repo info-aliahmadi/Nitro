@@ -1,19 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc.Authorization;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nitro.Core.Interfaces.Settings;
-using Nitro.Kernel.Interfaces;
-using Serilog;
-using Serilog.Exceptions;
-using Serilog.Sinks.Elasticsearch;
 
 namespace Nitro.Infrastructure.Setting
 {
