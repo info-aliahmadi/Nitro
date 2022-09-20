@@ -20,7 +20,7 @@ namespace Nitro.Web.Controllers.Auth
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
-        private readonly IStringLocalizer<HomeController> _localizer;
+        private readonly IStringLocalizer<SharedResource> _sharedlocalizer;
 
         public AccountController(
             UserManager<User> userManager,
@@ -28,7 +28,7 @@ namespace Nitro.Web.Controllers.Auth
             IEmailSender emailSender,
             ISmsSender smsSender,
             ILoggerFactory loggerFactory,
-            IStringLocalizer<HomeController> localizer)
+            IStringLocalizer<SharedResource> sharedlocalizer)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -36,13 +36,12 @@ namespace Nitro.Web.Controllers.Auth
             _smsSender = smsSender;
             _logger = loggerFactory.CreateLogger<AccountController>();
 
-            _localizer = localizer;
+            _sharedlocalizer = sharedlocalizer;
         }
 
-
-        [HttpPost(nameof(Login))]
+        [HttpPost(nameof(Initialize))]
         [AllowAnonymous]
-        public async Task<IActionResult> Login(LoginModel model)
+        public async Task<IActionResult> Initialize()
         {
             var result = new AccountResult();
             if (ModelState.IsValid)
@@ -51,12 +50,12 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     // This doesn't count login failures towards account lockout
                     // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                    var signInResult = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
+                    var signInResult = await _signInManager.(model.Email, model.Password,
                         model.RememberMe, lockoutOnFailure: false);
                     if (signInResult.Succeeded)
                     {
                         result.Status = AccountStatusEnum.Succeeded;
-                        _logger.LogInformation("User logged in with {0}.", model.Email);
+                        _logger.LogInformation(_sharedlocalizer["User logged in with {0}."], model.Email);
                         return Ok(result);
                     }
 
@@ -76,14 +75,67 @@ namespace Nitro.Web.Controllers.Auth
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
                     result.Status = AccountStatusEnum.Failed;
-                    result.Errors.Add("Invalid login attempt.");
+                    result.Errors.Add(_sharedlocalizer["Invalid login attempt."]);
                     return BadRequest(result);
                 }
             }
 
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
 
-            _logger.LogWarning("Email or password are invalid.; Requested By: {0} " , model.Email);
+            _logger.LogWarning(_sharedlocalizer["Email or password are invalid.; Requested By: {0} "], model.Email);
+            result.Status = AccountStatusEnum.Invalid;
+            foreach (var error in errors)
+            {
+                result.Errors.Add(error);
+            }
+
+            return BadRequest(result);
+        }
+
+        [HttpPost(nameof(Login))]
+        [AllowAnonymous]
+        public async Task<IActionResult> Login(LoginModel model)
+        {
+            var result = new AccountResult();
+            if (ModelState.IsValid)
+            {
+                try
+                {
+                    // This doesn't count login failures towards account lockout
+                    // To enable password failures to trigger account lockout, set lockoutOnFailure: true
+                    var signInResult = await _signInManager.PasswordSignInAsync(model.Email, model.Password,
+                        model.RememberMe, lockoutOnFailure: false);
+                    if (signInResult.Succeeded)
+                    {
+                        result.Status = AccountStatusEnum.Succeeded;
+                        _logger.LogInformation(_sharedlocalizer["User logged in with {0}."], model.Email);
+                        return Ok(result);
+                    }
+
+                    if (signInResult.RequiresTwoFactor)
+                    {
+                        result.Status = AccountStatusEnum.RequiresTwoFactor;
+                        return Ok(result);
+                    }
+
+                    if (signInResult.IsLockedOut)
+                    {
+                        result.Status = AccountStatusEnum.IsLockedOut;
+                        return Ok(result);
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.LogError(e.InnerException + "_" + e.Message);
+                    result.Status = AccountStatusEnum.Failed;
+                    result.Errors.Add(_sharedlocalizer["Invalid login attempt."]);
+                    return BadRequest(result);
+                }
+            }
+
+            var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
+
+            _logger.LogWarning(_sharedlocalizer["Email or password are invalid.; Requested By: {0} "] , model.Email);
             result.Status = AccountStatusEnum.Invalid;
             foreach (var error in errors)
             {
@@ -115,8 +167,8 @@ namespace Nitro.Web.Controllers.Auth
                             new { userId = user.Id, code = code, returnUrl = "" },
                             protocol: HttpContext.Request.Scheme);
 
-                        emailRequest.Subject = "ConfirmEmail";
-                        emailRequest.Body = string.Format("Please confirm your account by clicking this link: <a href='{0}'>link</a>", callbackUrl);
+                        emailRequest.Subject = _sharedlocalizer["ConfirmEmail"];
+                        emailRequest.Body = string.Format(_sharedlocalizer["Please confirm your account by clicking this link: <a href='{0}'>link</a>"], callbackUrl);
                         emailRequest.ToEmail = model.Email;
                         try
                         {
@@ -128,22 +180,22 @@ namespace Nitro.Web.Controllers.Auth
                         catch (Exception e)
                         {
                             _logger.LogError(e.InnerException + "_" + e.Message);
-                            result.Errors.Add(string.Format("{0} action throws an error"));
+                            result.Errors.Add(string.Format(_sharedlocalizer["{0} action throws an error"]));
                             return BadRequest(result);
                         }
                     }
 
                     await _signInManager.SignInAsync(user, isPersistent: false);
-                    _logger.LogInformation(3, "The user created a new account with the password.");
+                    _logger.LogInformation(3, _sharedlocalizer["The user created a new account with the password."]);
                     result.Status = AccountStatusEnum.Succeeded;
                     return Ok(result);
                 }
 
-                _logger.LogError("The user could not create a new account.; Requested By: {0}", model.Email);
+                _logger.LogError(_sharedlocalizer["The user could not create a new account.; Requested By: {0}"], model.Email);
                 result.Status = AccountStatusEnum.Failed;
                 foreach (var error in identityResult.Errors)
                 {
-                    _logger.LogError("{0}; Requested By: {1}", error.Description, model.Email);
+                    _logger.LogError(_sharedlocalizer["{0}; Requested By: {1}"], error.Description, model.Email);
                     result.Errors.Add(error.Description);
                 }
 
@@ -151,7 +203,7 @@ namespace Nitro.Web.Controllers.Auth
             }
 
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-            _logger.LogWarning("Input data are invalid.; Requested By: {0}" , model.Email);
+            _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: {0}"] , model.Email);
             result.Status = AccountStatusEnum.Invalid;
             foreach (var error in errors)
             {
@@ -167,7 +219,7 @@ namespace Nitro.Web.Controllers.Auth
         {
             var result = new AccountResult();
             await _signInManager.SignOutAsync();
-            _logger.LogInformation("The user logged out.");
+            _logger.LogInformation(_sharedlocalizer["The user logged out."]);
             result.Status = AccountStatusEnum.Succeeded;
             return Ok(result);
         }
@@ -191,8 +243,8 @@ namespace Nitro.Web.Controllers.Auth
             if (remoteError != null)
             {
                 result.Status = AccountStatusEnum.ErrorExternalProvider;
-                _logger.LogError("Error from external provider: {0}", remoteError);
-                result.Errors.Add(string.Format("Error from external provider: {0}", remoteError));
+                _logger.LogError(_sharedlocalizer["Error from external provider: {0}"], remoteError);
+                result.Errors.Add(string.Format(_sharedlocalizer["Error from external provider: {0}"], remoteError));
                 return BadRequest(result);
             }
 
@@ -200,8 +252,8 @@ namespace Nitro.Web.Controllers.Auth
             if (info == null)
             {
                 result.Status = AccountStatusEnum.NullExternalLoginInfo;
-                _logger.LogError("Could not get info from an external provider");
-                result.Errors.Add("Could not get info from an external provider");
+                _logger.LogError(_sharedlocalizer["Could not get info from an external provider"]);
+                result.Errors.Add(_sharedlocalizer["Could not get info from an external provider"]);
                 return BadRequest(result);
             }
 
@@ -213,7 +265,7 @@ namespace Nitro.Web.Controllers.Auth
             {
                 // Update any authentication tokens if login succeeded
                 await _signInManager.UpdateExternalAuthenticationTokensAsync(info);
-                _logger.LogInformation("User logged in with {0} provider.", info.LoginProvider);
+                _logger.LogInformation(_sharedlocalizer["User logged in with {0} provider."], info.LoginProvider);
                 result.Status = AccountStatusEnum.Succeeded;
                 return Ok(result);
             }
@@ -235,7 +287,7 @@ namespace Nitro.Web.Controllers.Auth
 
                 var email = info.Principal.FindFirstValue(ClaimTypes.Email);
 
-                _logger.LogWarning("Redirect the user {0} to ExternalLoginConfirmation", email);
+                _logger.LogWarning(_sharedlocalizer["Redirect the user {0} to ExternalLoginConfirmation"], email);
 
                 var redirectUrl = Url.Action("ExternalLoginConfirmation", "Account",
                     new ExternalLoginConfirmationModel { Email = email });
@@ -256,7 +308,7 @@ namespace Nitro.Web.Controllers.Auth
                 if (info == null)
                 {
                     result.Status = AccountStatusEnum.ExternalLoginFailure;
-                    _logger.LogError("External Login Failure for user: {0}", model.Email);
+                    _logger.LogError(_sharedlocalizer["External Login Failure for user: {0}"], model.Email);
                     return BadRequest(result);
                 }
 
@@ -269,7 +321,7 @@ namespace Nitro.Web.Controllers.Auth
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         _logger.LogInformation(6,
-                            "User created an account using {0} provider; Requested By: {1}", info.LoginProvider,
+                            _sharedlocalizer["User created an account using {0} provider; Requested By: {1}"], info.LoginProvider,
                             model.Email);
                         result.Status = AccountStatusEnum.Succeeded;
                         // Update any authentication tokens as well
@@ -279,7 +331,7 @@ namespace Nitro.Web.Controllers.Auth
                     }
                 }
 
-                _logger.LogError("The user could not create a new account after external login.;" + model.Email);
+                _logger.LogError(_sharedlocalizer["The user could not create a new account after external login.;"] + model.Email);
                 result.Status = AccountStatusEnum.Failed;
                 foreach (var error in userManagerResult.Errors)
                 {
@@ -291,7 +343,7 @@ namespace Nitro.Web.Controllers.Auth
             }
 
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-            _logger.LogWarning("Input data are invalid.; Requested By: {0} " , model.Email);
+            _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: {0} "] , model.Email);
             result.Status = AccountStatusEnum.Invalid;
             foreach (var error in errors)
             {
@@ -308,17 +360,17 @@ namespace Nitro.Web.Controllers.Auth
         {
             if (userId == null || code == null)
             {
-                _logger.LogWarning("Input data are invalid.; Requested By: " + userId);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + userId);
                 return Redirect(returnUrl + "&status=error");
             }
 
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                _logger.LogWarning("Input data are invalid.; Requested By: " + userId);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + userId);
                 return Redirect(returnUrl + "&status=error");
             }
-            _logger.LogInformation("User confirmed the code.; Requested By: {0}" , userId);
+            _logger.LogInformation(_sharedlocalizer["User confirmed the code.; Requested By: {0}"] , userId);
             var result = await _userManager.ConfirmEmailAsync(user, code);
             return Redirect(returnUrl + "&status" + (result.Succeeded ? "succeeded" : "error"));
         }
@@ -351,9 +403,8 @@ namespace Nitro.Web.Controllers.Auth
                     new { userId = user.Id, code = code, returnUrl = "" },
                     protocol: HttpContext.Request.Scheme);
 
-                emailRequest.Subject = "ConfirmEmail";
-                emailRequest.Body = "Please confirm your account by clicking this link: <a href=\"" +
-                                    callbackUrl + "\">link</a>";
+                emailRequest.Subject = _sharedlocalizer["ConfirmEmail"];
+                emailRequest.Body = string.Format( _sharedlocalizer["Please confirm your account by clicking this link: <a href='{0}'>link</a>"]);
                 emailRequest.ToEmail = model.Email;
                 try
                 {
@@ -365,7 +416,7 @@ namespace Nitro.Web.Controllers.Auth
                 catch (Exception e)
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
-                    result.Errors.Add("RequireConfirmedEmail action throw an error");
+                    result.Errors.Add(_sharedlocalizer["RequireConfirmedEmail action throw an error"]);
                     return BadRequest(result);
                 }
 
@@ -374,7 +425,7 @@ namespace Nitro.Web.Controllers.Auth
 
             // If we got this far, something failed, redisplay form
             var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-            _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+            _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + model.Email);
             result.Status = AccountStatusEnum.Invalid;
             foreach (var error in errors)
             {
@@ -395,7 +446,7 @@ namespace Nitro.Web.Controllers.Auth
             if (!ModelState.IsValid)
             {
                 var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-                _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + model.Email);
                 result.Status = AccountStatusEnum.Invalid;
                 foreach (var error in errors)
                 {
@@ -409,7 +460,7 @@ namespace Nitro.Web.Controllers.Auth
             if (user == null)
             {
                 // Don't reveal that the user does not exist
-                _logger.LogWarning("Input data are invalid.; Requested By: " + model.Email);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + model.Email);
                 result.Status = AccountStatusEnum.Failed;
                 return BadRequest(result);
             }
@@ -421,9 +472,9 @@ namespace Nitro.Web.Controllers.Auth
                 return Ok(result);
             }
 
-            _logger.LogError("{0} action does not Succeeded", "ResetPasswordAsync");
+            _logger.LogError(_sharedlocalizer["{0} action does not Succeeded"], "ResetPasswordAsync");
             result.Status = AccountStatusEnum.Failed;
-            result.Errors.Add(string.Format("{0} action does not Succeeded", "ResetPasswordAsync"));
+            result.Errors.Add(string.Format(_sharedlocalizer["{0} action does not Succeeded"], "ResetPasswordAsync"));
             return BadRequest(result);
         }
 
@@ -437,7 +488,7 @@ namespace Nitro.Web.Controllers.Auth
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (user == null)
             {
-                _logger.LogWarning("Input data are invalid.; Requested By: " + user.Email);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: "] + user.Email);
                 result.Status = AccountStatusEnum.Failed;
                 return BadRequest(result);
             }
@@ -460,7 +511,7 @@ namespace Nitro.Web.Controllers.Auth
             var user = await _signInManager.GetTwoFactorAuthenticationUserAsync();
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Input data are invalid.; Requested By: " + user ?? user.Email);
+                _logger.LogError(_sharedlocalizer["Input data are invalid.; Requested By: "] + user ?? user.Email);
                 result.Status = AccountStatusEnum.Invalid;
                 result.Errors.Add("");
 
@@ -469,9 +520,9 @@ namespace Nitro.Web.Controllers.Auth
 
             if (user == null)
             {
-                _logger.LogError("User not found.;");
+                _logger.LogError(_sharedlocalizer["User not found.;"]);
                 result.Status = AccountStatusEnum.Failed;
-                result.Errors.Add("User not found.; ");
+                result.Errors.Add(_sharedlocalizer["User not found.; "]);
 
                 return NotFound(result);
             }
@@ -489,20 +540,20 @@ namespace Nitro.Web.Controllers.Auth
             var code = await _userManager.GenerateTwoFactorTokenAsync(user, model.SelectedProvider);
             if (string.IsNullOrWhiteSpace(code))
             {
-                _logger.LogError("Token generator returned null.; Requested By: {0}" , user.Email);
+                _logger.LogError(_sharedlocalizer["Token generator returned null.; Requested By: {0}"] , user.Email);
                 result.Status = AccountStatusEnum.Failed;
-                result.Errors.Add(string.Format("Token generator returned null.; Requested By: {0}", user.Email));
+                result.Errors.Add(string.Format(_sharedlocalizer["Token generator returned null.; Requested By: {0}"], user.Email));
 
                 return BadRequest(result);
             }
 
-            var message = "Your security code is: " + code;
+            var message = _sharedlocalizer["Your security code is: "] + code;
             if (model.SelectedProvider == "Email")
             {
                 var emailRequest = new EmailRequestRecord()
                 {
                     ToEmail = await _userManager.GetEmailAsync(user),
-                    Subject = "Security Code",
+                    Subject = _sharedlocalizer["Security Code"],
                     Body = message
                 };
 
@@ -516,7 +567,7 @@ namespace Nitro.Web.Controllers.Auth
                 catch (Exception e)
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
-                    result.Errors.Add("Send email action throws an error");
+                    result.Errors.Add(_sharedlocalizer["Send email action throws an error"]);
                     return BadRequest(result);
                 }
             }
@@ -528,7 +579,7 @@ namespace Nitro.Web.Controllers.Auth
                     Message = message
                 };
                 try
-                {l
+                {
                     await _smsSender.SendSmsAsync(smsRequest);
 
                     result.Status = AccountStatusEnum.Succeeded;
@@ -537,14 +588,14 @@ namespace Nitro.Web.Controllers.Auth
                 catch (Exception e)
                 {
                     _logger.LogError(e.InnerException + "_" + e.Message);
-                    result.Errors.Add("Send sms action throws an error");
+                    result.Errors.Add(_sharedlocalizer["Send sms action throws an error"]);
                     return BadRequest(result);
                 }
             }
 
-            _logger.LogError("The operation failed.; Requested By: {0}" , user.Email);
+            _logger.LogError(_sharedlocalizer["The operation failed.; Requested By: {0}"] , user.Email);
             result.Status = AccountStatusEnum.Failed;
-            result.Errors.Add(string.Format("The operation failed.; Requested By: {0}", user.Email));
+            result.Errors.Add(string.Format(_sharedlocalizer["The operation failed.; Requested By: {0}"], user.Email));
 
             return BadRequest(result);
         }
@@ -562,7 +613,7 @@ namespace Nitro.Web.Controllers.Auth
             var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Input data are invalid.; Requested By: " + (await GetCurrentUserAsync()).Email);
+                _logger.LogError(_sharedlocalizer["Input data are invalid.; Requested By: "] + (await GetCurrentUserAsync()).Email);
                 result.Status = AccountStatusEnum.Invalid;
                 result.Errors.Add("");
 
@@ -579,14 +630,14 @@ namespace Nitro.Web.Controllers.Auth
 
             if (signInResult.IsLockedOut)
             {
-                _logger.LogWarning(7, "User account locked out..; Requested By: {0}" , (await GetCurrentUserAsync()).Email);
+                _logger.LogWarning(7, _sharedlocalizer["User account locked out..; Requested By: {0}"] , (await GetCurrentUserAsync()).Email);
 
                 result.Status = AccountStatusEnum.IsLockedOut;
                 return Ok(result);
             }
             else
             {
-                _logger.LogWarning("Code is invalid.; Requested By: {0}" , (await GetCurrentUserAsync()).Email);
+                _logger.LogWarning(_sharedlocalizer["Code is invalid.; Requested By: {0}"] , (await GetCurrentUserAsync()).Email);
                 result.Status = AccountStatusEnum.InvalidCode;
 
                 return BadRequest(result);
@@ -606,7 +657,7 @@ namespace Nitro.Web.Controllers.Auth
             var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Input data are invalid.;");
+                _logger.LogError(_sharedlocalizer["Input data are invalid.;"]);
                 result.Status = AccountStatusEnum.Invalid;
                 result.Errors.Add("");
 
@@ -649,7 +700,7 @@ namespace Nitro.Web.Controllers.Auth
             var result = new AccountResult();
             if (!ModelState.IsValid)
             {
-                _logger.LogError("Input data are invalid.;");
+                _logger.LogError(_sharedlocalizer["Input data are invalid.;"]);
                 result.Status = AccountStatusEnum.Invalid;
                 result.Errors.Add("");
 

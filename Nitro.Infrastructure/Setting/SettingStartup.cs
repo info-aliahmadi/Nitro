@@ -30,6 +30,7 @@ namespace Nitro.Infrastructure.Setting
             builder.Services.AddSingleton<ISmsSetting>((serviceProvider) =>
                 builder.Configuration.GetSection("SmsSetting").Get<SmsSetting>());
 
+
         }
         
     }

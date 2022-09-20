@@ -18,6 +18,8 @@ namespace Nitro.Infrastructure.Security
                  .AddEntityFrameworkStores<ApplicationDbContext>()
                  .AddDefaultTokenProviders();
 
+            services.Configuration.GetSection("SmtpSetting").Get<SmtpSetting>()
+
             services.AddAuthentication()
                 .AddCookie(options =>
                 {

@@ -117,7 +117,91 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Hello" xml:space="preserve">
-    <value>Bonjour</value>
+  <data name="Code is invalid.; Requested By: {0}" xml:space="preserve">
+    <value>Le code n'est pas valide. ; Demandé par : {0}</value>
+  </data>
+  <data name="Could not get info from an external provider" xml:space="preserve">
+    <value>Impossible d'obtenir des informations d'un fournisseur externe</value>
+  </data>
+  <data name="Email or password is invalid.; Requested By: {0}" xml:space="preserve">
+    <value>L'e-mail ou le mot de passe n'est pas valide. ; Demandé par : {0}</value>
+  </data>
+  <data name="Error from external provider: {0}" xml:space="preserve">
+    <value>Erreur du fournisseur externe : {0}</value>
+  </data>
+  <data name="External Login Failure for user: {0}" xml:space="preserve">
+    <value>Échec de connexion externe pour l'utilisateur : {0}</value>
+  </data>
+  <data name="Failed to verify phone number" xml:space="preserve">
+    <value>Échec de la vérification du numéro de téléphone</value>
+  </data>
+  <data name="Input data are invalid.; Requested By: {0}" xml:space="preserve">
+    <value>Les données d'entrée ne sont pas valides. ; Demandé par : {0}</value>
+  </data>
+  <data name="Invalid login attempt." xml:space="preserve">
+    <value>Tentative de connexion invalide.</value>
+  </data>
+  <data name="Please confirm your account by clicking this link: &lt;a href=\&quot;{0}\&quot;&gt;link&lt;/a&gt;" xml:space="preserve">
+    <value>Veuillez confirmer votre compte en cliquant sur ce lien : &lt;a href='{0}'&gt;lien&lt;/a&gt;</value>
+  </data>
+  <data name="Redirect the user {0} to ExternalLoginConfirmation" xml:space="preserve">
+    <value>Rediriger l'utilisateur {0} vers ExternalLoginConfirmation</value>
+  </data>
+  <data name="Security Code" xml:space="preserve">
+    <value>Code de sécurité</value>
+  </data>
+  <data name="Send email action throws an error" xml:space="preserve">
+    <value>L'action d'envoi d'e-mail renvoie une erreur</value>
+  </data>
+  <data name="Send sms action throws an error" xml:space="preserve">
+    <value>L'action d'envoi de SMS génère une erreur</value>
+  </data>
+  <data name="The operation failed.; Requested By: {0}" xml:space="preserve">
+    <value>L'opération a échoué.; Demandé par : {0}</value>
+  </data>
+  <data name="The user could not create a new account after external login.;" xml:space="preserve">
+    <value>L'utilisateur n'a pas pu créer un nouveau compte après une connexion externe.;</value>
+  </data>
+  <data name="The user could not create a new account.; Requested By: {0}" xml:space="preserve">
+    <value>L'utilisateur n'a pas pu créer de nouveau compte.; Demandé par : {0}</value>
+  </data>
+  <data name="The user created a new account with the password." xml:space="preserve">
+    <value>L'utilisateur a créé un nouveau compte avec le mot de passe.</value>
+  </data>
+  <data name="The user logged out." xml:space="preserve">
+    <value>L'utilisateur s'est déconnecté.</value>
+  </data>
+  <data name="Token generator returned null.; Requested By: {0}" xml:space="preserve">
+    <value>Le générateur de jetons a renvoyé null. ; Demandé par : {0}</value>
+  </data>
+  <data name="User account locked out..; Requested By: {0}" xml:space="preserve">
+    <value>Compte utilisateur verrouillé. ; Demandé par : {0}</value>
+  </data>
+  <data name="User confirmed the code.; Requested By: {0}" xml:space="preserve">
+    <value>L'utilisateur a confirmé le code.; Demandé par : {0}</value>
+  </data>
+  <data name="User created an account using {0} provider; Requested By: {1}" xml:space="preserve">
+    <value>L'utilisateur a créé un compte en utilisant le fournisseur {0} ; Demandé par : {1}</value>
+  </data>
+  <data name="User logged in with {0} provider." xml:space="preserve">
+    <value>L'utilisateur s'est connecté avec le fournisseur {0}.</value>
+  </data>
+  <data name="User logged in with {0}." xml:space="preserve">
+    <value>Utilisateur connecté avec {0}.</value>
+  </data>
+  <data name="User not found.;" xml:space="preserve">
+    <value>Utilisateur non trouvé.;</value>
+  </data>
+  <data name="Your security code is:" xml:space="preserve">
+    <value>Votre code de sécurité est :</value>
+  </data>
+  <data name="{0} action does not Succeeded" xml:space="preserve">
+    <value>Compte utilisateur verrouillé. ; Demandé par : {0}</value>
+  </data>
+  <data name="{0} action throws an error" xml:space="preserve">
+    <value>{0} action génère une erreur</value>
+  </data>
+  <data name="{0}; Requested By: {1}" xml:space="preserve">
+    <value>{0} ; Demandé par : {1}</value>
   </data>
 </root>
