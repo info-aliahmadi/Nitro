@@ -24,7 +24,7 @@ namespace Nitro.Web.Controllers.Auth
         private readonly IEmailSender _emailSender;
         private readonly ISmsSender _smsSender;
         private readonly ILogger _logger;
-        private readonly IRepository _repository;
+        private readonly IQueryRepository _repository;
         private readonly IStringLocalizer<SharedResource> _sharedlocalizer;
 
         public AccountController(
@@ -33,7 +33,7 @@ namespace Nitro.Web.Controllers.Auth
             IEmailSender emailSender,
             ISmsSender smsSender,
             ILoggerFactory loggerFactory,
-            IRepository repository,
+            IQueryRepository repository,
             IStringLocalizer<SharedResource> sharedlocalizer)
         {
             _userManager = userManager;

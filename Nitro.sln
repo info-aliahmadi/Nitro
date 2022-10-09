@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Service", "Nitro.Serv
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.Migrations", "Nitro.Migration\Nitro.Migrations.csproj", "{3DFB2289-80AA-4BAE-B3FC-C1BB889D8AD1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitro.FileStorage", "Nitro.FileStorage\Nitro.FileStorage.csproj", "{2E8EAE41-BB31-457C-88BA-34C6B9F97ACE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Nitro.FileStorage", "Nitro.FileStorage\Nitro.FileStorage.csproj", "{2E8EAE41-BB31-457C-88BA-34C6B9F97ACE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Nitro.Test", "Nitro.Test\Nitro.Test.csproj", "{5BB5D082-D48A-4569-B99F-CE996770E923}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -51,6 +53,10 @@ Global
 		{2E8EAE41-BB31-457C-88BA-34C6B9F97ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2E8EAE41-BB31-457C-88BA-34C6B9F97ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2E8EAE41-BB31-457C-88BA-34C6B9F97ACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5BB5D082-D48A-4569-B99F-CE996770E923}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BB5D082-D48A-4569-B99F-CE996770E923}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BB5D082-D48A-4569-B99F-CE996770E923}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BB5D082-D48A-4569-B99F-CE996770E923}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

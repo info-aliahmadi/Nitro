@@ -17,7 +17,8 @@ namespace Nitro.Infrastructure.ServiceRegistrar
 
 
             // services
-            services.AddScoped<IRepository, Repository>();
+            services.AddScoped<ICommandRepository, CommandRepository>();
+            services.AddScoped<IQueryRepository, QueryRepository>();
             services.AddScoped<IEmailSender, MessageSender>();
             services.AddScoped<ISmsSender, MessageSender>();
 

@@ -2,18 +2,14 @@
 // Copyright (c) TanvirArjel. All rights reserved.
 // </copyright>
 
-using System.Data;
 using System.Data.Common;
-using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
 using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.DynamicLinq;
 using Microsoft.EntityFrameworkCore.Query;
 using Nitro.Infrastructure.Data.Extension;
 using Nitro.Kernel;
 using Nitro.Kernel.Extensions;
-using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Interfaces.Data;
 
 namespace Nitro.Infrastructure.Data
@@ -26,23 +22,47 @@ namespace Nitro.Infrastructure.Data
         {
             _dbContext = dbContext;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
         public DbSet<T> Table<T>() where T : class => _dbContext.Set<T>();
 
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
             return GetListAsync<T>(asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
             where T : class
         {
             Func<IQueryable<T>, IIncludableQueryable<T, object>> nullValue = null;
             return GetListAsync(nullValue, asNoTracking, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="includes"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
              bool cacheable = false,
@@ -51,7 +71,15 @@ namespace Nitro.Infrastructure.Data
         {
             return GetListAsync(includes, false, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="includes"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<List<T>> GetListAsync<T>(
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
             bool asNoTracking,
@@ -80,7 +108,14 @@ namespace Nitro.Infrastructure.Data
 
             return items;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="condition"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
             bool cacheable = false,
@@ -90,6 +125,15 @@ namespace Nitro.Infrastructure.Data
             return GetListAsync(condition, false, cacheable, cancellationToken);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="condition"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
             bool asNoTracking,
@@ -99,7 +143,16 @@ namespace Nitro.Infrastructure.Data
         {
             return GetListAsync(condition, null, asNoTracking, cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="condition"></param>
+        /// <param name="includes"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<List<T>> GetListAsync<T>(
             Expression<Func<T, bool>> condition,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
@@ -134,13 +187,28 @@ namespace Nitro.Infrastructure.Data
 
             return items;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<List<T>> GetListAsync<T>(Specification<T> specification, bool cacheable = false, CancellationToken cancellationToken = default)
            where T : class
         {
             return GetListAsync(specification, false, cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public async Task<List<T>> GetListAsync<T>(
             Specification<T> specification,
             bool asNoTracking,
@@ -167,7 +235,16 @@ namespace Nitro.Infrastructure.Data
 
             return await query.ToListAsync(cancellationToken).ConfigureAwait(false);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TProjectedType"></typeparam>
+        /// <param name="selectExpression"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Expression<Func<T, TProjectedType>> selectExpression,
             bool cacheable = false,
@@ -190,7 +267,17 @@ namespace Nitro.Infrastructure.Data
 
             return entities;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TProjectedType"></typeparam>
+        /// <param name="condition"></param>
+        /// <param name="selectExpression"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Expression<Func<T, bool>> condition,
             Expression<Func<T, TProjectedType>> selectExpression,
@@ -220,7 +307,17 @@ namespace Nitro.Infrastructure.Data
 
             return projectedEntites;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TProjectedType"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="selectExpression"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<List<TProjectedType>> GetListAsync<T, TProjectedType>(
             Specification<T> specification,
             Expression<Func<T, TProjectedType>> selectExpression,
@@ -247,7 +344,15 @@ namespace Nitro.Infrastructure.Data
             return await query.Select(selectExpression)
                 .ToListAsync(cancellationToken).ConfigureAwait(false);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<PaginatedList<T>> GetListAsync<T>(
             PaginationSpecification<T> specification,
             bool cacheable = false,
@@ -269,7 +374,17 @@ namespace Nitro.Infrastructure.Data
             PaginatedList<T> paginatedList = await query.ToPaginatedListAsync(specification, cancellationToken);
             return paginatedList;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TProjectedType"></typeparam>
+        /// <param name="specification"></param>
+        /// <param name="selectExpression"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<PaginatedList<TProjectedType>> GetListAsync<T, TProjectedType>(
             PaginationSpecification<T> specification,
             Expression<Func<T, TProjectedType>> selectExpression,
@@ -299,12 +414,28 @@ namespace Nitro.Infrastructure.Data
                 .ToPaginatedListAsync(specification.PageIndex, specification.PageSize, cancellationToken);
             return paginatedList;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<T> GetByIdAsync<T>(int id, bool cacheable = false, CancellationToken cancellationToken = default)
                   where T : BaseEntity<int>
         {
             return GetByIdAsync<T>(id, asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<T> GetByIdAsync<T>(int id,
             bool asNoTracking = false,
             bool cacheable = false,
@@ -313,7 +444,15 @@ namespace Nitro.Infrastructure.Data
         {
             return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="includes"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<T> GetByIdAsync<T>(
             int id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
@@ -323,7 +462,17 @@ namespace Nitro.Infrastructure.Data
         {
             return GetByIdAsync(id, includes, asNoTracking: false, cacheable: cacheable, cancellationToken);
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="includes"></param>
+        /// <param name="asNoTracking"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<T> GetByIdAsync<T>(
             int id,
             Func<IQueryable<T>, IIncludableQueryable<T, object>> includes,
@@ -354,7 +503,17 @@ namespace Nitro.Infrastructure.Data
             }
             return enity;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <typeparam name="TProjectedType"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="selectExpression"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public async Task<TProjectedType> GetByIdAsync<T, TProjectedType>(
             int id,
             Expression<Func<T, TProjectedType>> selectExpression,
@@ -381,9 +540,14 @@ namespace Nitro.Infrastructure.Data
             }
             return enity;
         }
-
-
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="id"></param>
+        /// <param name="cacheable"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         public Task<T> GetByIdAsync<T>(long id, bool cacheable = false, CancellationToken cancellationToken = default)
                   where T : BaseEntity<long>
         {
@@ -396,7 +560,7 @@ namespace Nitro.Infrastructure.Data
             CancellationToken cancellationToken = default)
             where T : BaseEntity<long>
         {
-            return GetByIdAsync<T>(id, null, asNoTracking, cacheable: cacheable, cancellationToken);
+            return GetByIdAsync<T>(id, null, asNoTracking,  cacheable, cancellationToken);
         }
 
         public Task<T> GetByIdAsync<T>(
@@ -406,7 +570,7 @@ namespace Nitro.Infrastructure.Data
             CancellationToken cancellationToken = default)
             where T : BaseEntity<long>
         {
-            return GetByIdAsync(id, includes, asNoTracking: false, cacheable: cacheable, cancellationToken);
+            return GetByIdAsync(id, includes, asNoTracking: false,  cacheable, cancellationToken);
         }
 
         public async Task<T> GetByIdAsync<T>(
@@ -822,6 +986,10 @@ namespace Nitro.Infrastructure.Data
 
             List<T> items = await _dbContext.GetFromQueryAsync<T>(sql, parameters, cancellationToken);
             return items;
+        }
+        public void Dispose()
+        {
+            _dbContext.Dispose();
         }
     }
 }
