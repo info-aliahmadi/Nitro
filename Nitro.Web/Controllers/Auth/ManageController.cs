@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Localization;
 using Nitro.Core.Domain.Auth;
-using Nitro.Core.Model.Auth;
+using Nitro.Core.Models.Auth;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Models;
 
@@ -12,7 +12,7 @@ namespace Nitro.Web.Controllers.Auth
     [AllowAnonymous]
     [ApiController]
     [Route("Manage/[controller]")]
-    public class ManageController : Controller
+    public class ManageController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;

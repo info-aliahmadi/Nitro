@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using Nitro.Core.Domain.Auth;
-using Nitro.Core.Model.Auth;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Models;
 using System.Security.Claims;
 using EFCoreSecondLevelCacheInterceptor;
 using Nitro.Core.Data.Domain;
+using Nitro.Core.Models.Auth;
 using Nitro.Kernel.Interfaces.Data;
 using Nitro.Service.MessageSender;
 
@@ -17,7 +17,7 @@ namespace Nitro.Web.Controllers.Auth
 {
     [Authorize]
     [Route("[controller]")]
-    public class AccountController : Controller
+    public class AccountController : ControllerBase
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
