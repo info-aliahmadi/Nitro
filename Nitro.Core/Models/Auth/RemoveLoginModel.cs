@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
     public class RemoveLoginModel
     {

@@ -5,11 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
-    public class RecoveryCodesModel
+    public record ForgotPasswordModel
     {
         [Required]
-        public IEnumerable<string> Codes { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
     }
+
 }

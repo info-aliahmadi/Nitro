@@ -5,13 +5,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
-    public class UseRecoveryCodeModel
+    public class ExternalLoginConfirmationModel
     {
         [Required]
-        public string Code { get; set; }
-
-        public string ReturnUrl { get; set; }
+        [EmailAddress]
+        public string Email { get; set; }
     }
 }

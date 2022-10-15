@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
-    public class AddPhoneNumberModel
+    public class RecoveryCodesModel
     {
         [Required]
-        [Phone]
-        public string PhoneNumber { get; set; }
+        public IEnumerable<string> Codes { get; set; }
     }
 }

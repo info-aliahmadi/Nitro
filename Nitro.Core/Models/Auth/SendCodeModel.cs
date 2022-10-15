@@ -1,7 +1,7 @@
 ﻿
 using Nitro.Kernel.Models;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
     public class SendCodeModel
     {

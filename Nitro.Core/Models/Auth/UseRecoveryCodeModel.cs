@@ -5,20 +5,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Nitro.Core.Model.Auth
+namespace Nitro.Core.Models.Auth
 {
-    public class VerifyCodeModel
+    public class UseRecoveryCodeModel
     {
-        [Required]
-        public string Provider { get; set; }
-
         [Required]
         public string Code { get; set; }
 
         public string ReturnUrl { get; set; }
-
-        public bool RememberBrowser { get; set; }
-
-        public bool RememberMe { get; set; }
     }
 }
