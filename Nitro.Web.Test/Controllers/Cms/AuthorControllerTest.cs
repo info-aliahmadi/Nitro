@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AutoFixture;
-using Microsoft.AspNetCore.Mvc;
+using AutoFixture.AutoMoq;
+using AutoFixture.Xunit2;
+using FluentAssertions;
 using Moq;
 using Nitro.Core.Interfaces.Cms;
 using Nitro.Core.Models.Cms;
@@ -12,7 +14,7 @@ namespace Nitro.Web.Test.Controllers.Cms
 {
     public class AuthorControllerTest
     {
-        public  IList<AuthorModel> _authors = new List<AuthorModel>()
+        public  IList<AuthorModel> _authors2 = new List<AuthorModel>()
         {
             new ()
             {
@@ -43,18 +45,20 @@ namespace Nitro.Web.Test.Controllers.Cms
         public async Task GetTest()
         {
             // arrange
-            var fixture = new Fixture().Customize(new AutoMoqCustomization());
-            var service = fixture.Freeze<Mock<IAuthorService>>();
-            service.Setup(a => a.GetList())
-                .ReturnsAsync(_authors);
-            var controller = fixture.Build<AuthorController>().OmitAutoProperties().Create();
+            // Fixture setup
+            var fixture = new Fixture()
+                .Customize(new AutoMoqCustomization());
 
-            // act
-            var response = await controller.GetNumberOfCharacters("Hoi");
+            var authors = fixture.Freeze<List<AuthorModel>>();
+            var authorService = fixture.Freeze<Mock<IAuthorService>>();
 
-            // assert
-            Assert.Equal(8, ((OkObjectResult)response.Result).Value);
-            service.Verify(s => s.GetNumberOfCharactersFromSearchQuery("Hoi"), Times.Once);
+            var sut = fixture.Create<IAuthorService>();
+
+            sut.GetList().Verify(x => x.GetList());
+
+            var sss =  productRepo.Setup(x => x.GetList().Result).Returns(() => _authors);
+
+            sss.Should().BeEquivalentTo(_authors);
         }
     }
 }
