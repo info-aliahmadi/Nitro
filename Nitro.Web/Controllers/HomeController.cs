@@ -40,6 +40,7 @@ namespace Nitro.Web.Controllers
                 Summary = Summaries[Random.Shared.Next(Summaries.Length)]
             })
             .ToArray();
+
         }
         [AllowAnonymous]
         [HttpGet("TestLocalization")]

@@ -12,7 +12,7 @@ using Nitro.Kernel.Interfaces.Data;
 
 namespace Nitro.Infrastructure.Data
 {
-    internal class CommandRepository : ICommandRepository
+    public class CommandRepository : ICommandRepository
     {
         private readonly IEFCacheServiceProvider _cacheService;
         private readonly ApplicationDbContext _dbContext;
