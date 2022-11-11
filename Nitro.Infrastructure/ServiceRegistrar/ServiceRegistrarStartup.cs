@@ -6,6 +6,7 @@ using Nitro.Core.Domain.Auth;
 using Nitro.Infrastructure.Data;
 using Nitro.Kernel.Interfaces;
 using Nitro.Kernel.Interfaces.Data;
+using Nitro.Service;
 using Nitro.Service.MessageSender;
 
 namespace Nitro.Infrastructure.ServiceRegistrar
@@ -17,9 +18,10 @@ namespace Nitro.Infrastructure.ServiceRegistrar
 
 
             // services
-            services.AddScoped<IRepository, Repository>();
-            services.AddScoped<IEmailSender, MessageSender>();
-            services.AddScoped<ISmsSender, MessageSender>();
+            services.AddScoped<ICommandRepository, CommandRepository>();
+            services.AddScoped<IQueryRepository, QueryRepository>();
+
+            services.AddAllServices();
 
 
         }

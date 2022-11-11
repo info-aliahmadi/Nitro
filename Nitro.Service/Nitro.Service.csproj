@@ -16,4 +16,8 @@
     <ProjectReference Include="..\Nitro.Core\Nitro.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Auth\" />
+  </ItemGroup>
+
 </Project>

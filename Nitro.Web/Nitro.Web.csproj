@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<InternalsVisibleTo Include="Nitro.Test" />
 		<Compile Remove="Resources\Controllers\Auth\**" />
 		<Compile Remove="Resources\Controllers\Cms\**" />
 		<Compile Remove="Views\**" />

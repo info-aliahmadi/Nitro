@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -11,17 +11,11 @@
 	  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
 	  <!--<PackageReference Include="Moq" Version="4.18.2" />-->
 	  <PackageReference Include="AutoFixture" Version="4.17.0" />
+	  <PackageReference Include="AutoFixture.AutoMoq" Version="4.17.0" />
+	  <PackageReference Include="AutoFixture.Xunit2" Version="4.17.0" />
 	  <PackageReference Include="FluentAssertions" Version="6.0.0-beta0003" />
 	  <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.9" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.1" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.1" />
-	  <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.1">
-		  <PrivateAssets>all</PrivateAssets>
-		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-	  </PackageReference>
-
-
-	  <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -33,11 +27,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Nitro.Core\Nitro.Core.csproj" />
-    <ProjectReference Include="..\Nitro.FileStorage\Nitro.FileStorage.csproj" />
-    <ProjectReference Include="..\Nitro.Infrastructure\Nitro.Infrastructure.csproj" />
-    <ProjectReference Include="..\Nitro.Kernel\Nitro.Kernel.csproj" />
-    <ProjectReference Include="..\Nitro.Service\Nitro.Service.csproj" />
     <ProjectReference Include="..\Nitro.Web\Nitro.Web.csproj" />
   </ItemGroup>
 

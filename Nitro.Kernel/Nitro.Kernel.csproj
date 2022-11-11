@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Interfaces\Data\IRepository.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="EasyCaching.InMemory" Version="1.6.1" />
     <PackageReference Include="EasyCaching.Redis" Version="1.6.1" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="5.0.14" />

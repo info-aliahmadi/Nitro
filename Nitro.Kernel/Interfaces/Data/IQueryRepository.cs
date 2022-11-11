@@ -22,6 +22,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// This method returns <see cref="List{T}"/> without any filter. Call only when you want to pull all the data from the source.
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(bool cacheable = false, CancellationToken cancellationToken = default)
@@ -34,6 +35,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -44,6 +46,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="includes">Navigation properties to be loaded.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(
@@ -60,6 +63,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <see cref="List{T}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(
@@ -74,6 +78,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="condition">The condition on which entity list will be returned.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(Expression<Func<TEntity, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -87,6 +92,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(
@@ -105,6 +111,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(
@@ -137,6 +144,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="List{TEntity}"/>.</returns>
         Task<List<TEntity>> GetListAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -148,6 +156,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <typeparam name="TProjectedType">The type to which <typeparamref name="TEntity"/> will be projected.</typeparam>
         /// <param name="selectExpression">A <b>LINQ</b> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<List<TProjectedType>> GetListAsync<TEntity, TProjectedType>(
@@ -163,6 +172,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="condition">The condition on which entity list will be returned.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -183,6 +193,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// on which data will be returned.
         /// </param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Return <see cref="Task{TResult}"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -198,6 +209,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="specification">An object of <see cref="PaginationSpecification{T}"/>.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="PaginatedList{T}"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="specification"/> is smaller than 1.</exception>
@@ -214,6 +226,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="specification">An object of <see cref="PaginationSpecification{T}"/>.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="specification"/> is smaller than 1.</exception>
@@ -232,6 +245,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(int id, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -246,6 +260,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(int id, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -258,6 +273,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="includes">The navigation properties to be loaded.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -277,6 +293,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -295,6 +312,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <typeparamref name="TProjectedType"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -315,6 +333,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(long id, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -327,6 +346,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="includes">The navigation properties to be loaded.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -346,6 +366,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -364,6 +385,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <typeparamref name="TProjectedType"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -383,6 +405,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(Guid id, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -395,6 +418,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="includes">The navigation properties to be loaded.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -414,6 +438,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetByIdAsync<TEntity>(
@@ -432,6 +457,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="id">The primary key value of the entity.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task"/> of <typeparamref name="TProjectedType"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -447,6 +473,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="condition">The conditon on which entity will be returned.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <typeparamref name="TEntity"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(Expression<Func<TEntity, bool>> condition, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -460,6 +487,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <typeparamref name="TEntity"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(
@@ -475,6 +503,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <param name="condition">The conditon on which entity will be returned.</param>
         /// <param name="includes">Navigation properties to be loaded.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <typeparamref name="TEntity"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(
@@ -493,6 +522,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <typeparamref name="TEntity"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(
@@ -510,6 +540,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="specification">A <see cref="Specification{TEntity}"/> object which contains all the conditions and criteria
         /// on which data will be returned.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -525,6 +556,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <param name="asNoTracking">A <see cref="bool"/> value which determines whether the return entity will be tracked by
         /// EF Core context or not. Defualt value is false i.e trackig is enabled by default.
         /// </param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         Task<TEntity> GetAsync<TEntity>(Specification<TEntity> specification, bool asNoTracking, bool cacheable = false, CancellationToken cancellationToken = default)
@@ -537,6 +569,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <typeparam name="TProjectedType">The projected type.</typeparam>
         /// <param name="condition">The conditon on which entity will be returned.</param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Retuns <typeparamref name="TProjectedType"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -557,6 +590,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// on which data will be returned.
         /// </param>
         /// <param name="selectExpression">The <see cref="System.Linq"/> select  query.</param>
+        /// <param name="cacheable"></param>
         /// <param name="cancellationToken"> A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
         /// <returns>Retuns <typeparamref name="TProjectedType"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="selectExpression"/> is <see langword="null"/>.</exception>
@@ -700,5 +734,10 @@ namespace Nitro.Kernel.Interfaces.Data
         /// <returns>Returns <see cref="Task{TResult}"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="sql"/> is <see langword="null"/>.</exception>
         Task<List<T>> GetFromRawSqlAsync<T>(string sql, IEnumerable<object> parameters, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void Dispose();
     }
 }

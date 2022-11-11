@@ -5,7 +5,7 @@ using Serilog;
 using System.Reflection;
 
 
-SerilogStartup.ConfigureLogging();
+    SerilogStartup.ConfigureLogging();
 
 	try
 	{
@@ -28,3 +28,4 @@ SerilogStartup.ConfigureLogging();
 		Log.Fatal($"Failed to start {Assembly.GetExecutingAssembly().GetName().Name}", ex);
 		throw;
 	}
+//public partial class Program { }
