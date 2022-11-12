@@ -27,6 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Nitro.Infrastructure.Test\Nitro.Infrastructure.Test.csproj" />
     <ProjectReference Include="..\Nitro.Service\Nitro.Service.csproj" />
   </ItemGroup>
 

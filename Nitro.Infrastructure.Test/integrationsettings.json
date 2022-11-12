@@ -1,6 +1,6 @@
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=.;Database=NitroTest;User Id=sa;password=1;Trusted_Connection=False;MultipleActiveResultSets=true;"
+    "DefaultConnection": "Server=.;Database=Nitro;User Id=sa;password=1;Trusted_Connection=False;MultipleActiveResultSets=true;"
   },
   "Serilog": {
     "MinimumLevel": {
