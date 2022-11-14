@@ -1,6 +1,8 @@
 using AutoFixture;
+using AutoFixture.AutoMoq;
 using AutoFixture.Xunit2;
 using FluentAssertions;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.TestHost;
@@ -9,6 +11,7 @@ using Nitro.Core.Interfaces.Cms;
 using Nitro.Core.Models.Cms;
 using Nitro.Infrastructure.Test;
 using Nitro.Web.Controllers.Cms;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -39,13 +42,43 @@ namespace Nitro.Web.Test
         [Greedy] AuthorController sut)
         {
             //Arrange
-            var items = fixture.CreateMany<AuthorModel>(3).ToList();
+            var expectedList = fixture.CreateMany<AuthorModel>().ToList();
 
             //Act
-            var result = sut.GetAuthors();
+            var resultList = sut.GetAuthors();
 
             //Assert
-            result.Should().BeEquivalentTo(items);
+            resultList.Should().BeEquivalentTo(expectedList);
+        }
+
+        [Fact]
+        public async void Test_Controller()
+        {
+            // Fixture setup
+            var fixture = new Fixture();
+            //var authorService = new Mock<IAuthorService>();
+            //var authorController = new Mock<ILogger<AuthorController>>();
+
+            //fixture.Register(() => authorService.Object);
+            //fixture.Register(() => authorController.Object);
+
+            fixture.Customize(new AutoMoqCustomization());
+
+            var sut = fixture.Build<AuthorController>().OmitAutoProperties().Create();
+
+            //Arrange
+            var expectedList = fixture.Create<ActionResult<IEnumerable<AuthorModel>>>();
+
+            /*  Check By control expected values  */
+            //var faceMock = fixture.Freeze<Mock<IFace>>();
+            //faceMock.Setup(x => x.IsHappy()).Returns(true);
+
+
+            //Act
+            var resultList = await sut.GetAuthors();
+
+            //Assert
+            resultList.Should().BeOfType();
         }
     }
 }

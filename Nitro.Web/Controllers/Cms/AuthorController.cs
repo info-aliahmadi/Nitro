@@ -21,7 +21,7 @@ namespace Nitro.Web.Controllers.Cms
         }
 
         [HttpGet( nameof(GetAuthors))]
-        public async Task<ActionResult<IList<AuthorModel>>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<AuthorModel>>> GetAuthors()
         {
             var authors = await _authorService.GetList();
             return Ok(authors);
