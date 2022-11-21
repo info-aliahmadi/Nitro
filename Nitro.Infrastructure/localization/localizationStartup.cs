@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace Nitro.Infrastructure.localization
 {
-    public static class localizationStartup
+    public static class LocalizationStartup
     {
         /// <summary>
         /// Configure the application HTTP request pipeline

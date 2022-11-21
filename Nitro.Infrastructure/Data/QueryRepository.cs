@@ -14,7 +14,7 @@ using Nitro.Kernel.Interfaces.Data;
 
 namespace Nitro.Infrastructure.Data
 {
-    internal class QueryRepository : IQueryRepository
+    public class QueryRepository : IQueryRepository
     {
         private readonly ApplicationDbContext _dbContext;
 

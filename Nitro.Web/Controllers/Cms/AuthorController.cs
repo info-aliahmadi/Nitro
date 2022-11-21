@@ -21,27 +21,31 @@ namespace Nitro.Web.Controllers.Cms
         }
 
         [HttpGet( nameof(GetAuthors))]
-        public async Task<ActionResult<IList<AuthorModel>>> GetAuthors()
+        public async Task<ActionResult<IEnumerable<AuthorModel>>> GetAuthors()
         {
             var authors = await _authorService.GetList();
             return Ok(authors);
         }
 
-        [HttpGet( nameof(GetAuthor))]
-        public async Task<ActionResult<AuthorModel>> GetAuthor(int authorId)
+        [HttpGet(nameof(GetAuthor))]
+        public async Task<ActionResult> GetAuthor(int authorId)
         {
+            if (authorId <= 0)
+            {
+                return NotFound();
+            }
             var author = await _authorService.GetById(authorId);
             return Ok(author);
         }
 
-        [HttpGet( nameof(Add))]
-        public async Task<ActionResult<AuthorModel>> Add(AuthorModel authorModel)
+        [HttpPost( nameof(Add))]
+        public async Task<ActionResult> Add(AuthorModel authorModel)
         {
             var author = await _authorService.Add(authorModel);
             return Ok(author);
         }
 
-        [HttpGet( nameof(Update))]
+        [HttpPost( nameof(Update))]
         public async Task<ActionResult<AuthorModel>> Update(AuthorModel authorModel)
         {
             var author = await _authorService.Update(authorModel);

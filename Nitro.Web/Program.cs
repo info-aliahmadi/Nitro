@@ -28,4 +28,4 @@ using System.Reflection;
 		Log.Fatal($"Failed to start {Assembly.GetExecutingAssembly().GetName().Name}", ex);
 		throw;
 	}
-//public partial class Program { }
+public partial class Program { }
