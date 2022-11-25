@@ -291,9 +291,22 @@ namespace Nitro.FileStorage.Services
                             var signatureResult = _validationService.ValidateFileSignature(firstBytes, fileExtension);
                             if (signatureResult != ValidationFileEnum.Ok)
                             {
-                                await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
+                                try
+                                {
+                                    await destination.AbortAsync(cancellationToken).ConfigureAwait(false);
+                                }
+                                catch
+                                {
+
+                                }
+                                finally
+                                {
+                                    await destination.CloseAsync(cancellationToken).ConfigureAwait(false);
+                                    //await DeleteChunkAsync(destination.Id);
+                                    //await ImagesBucket.DeleteAsync(destination.Id, cancellationToken);
+                                }
                                 buffer = (byte[]) null;
-                                result.ObjectId = destination.Id.ToString();
+                                //result.ObjectId = destination.Id.ToString();
                                 result.IsSuccessful = false;
                                 result.ErrorMessage = _validationService.GetValidationMessage(signatureResult);
                                 return result;

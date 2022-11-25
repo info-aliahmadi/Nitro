@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Net.Http.Headers;
@@ -212,6 +213,37 @@ namespace Nitro.FileStorage.Controllers
             }
         }
 
+
+        [HttpGet]
+        [Route(nameof(GetFileInfo))]
+        public async Task<IActionResult> GetFileInfo(string objectId, CancellationToken cancellationToken)
+        {
+            var parsedObjectId = new ObjectId(objectId.Trim());
+
+            var fileInfo = await _fileStorageService.GetFileInfoById(parsedObjectId);
+            if (fileInfo == null)
+            {
+                return BadRequest("file Not Found.");
+            }
+            var metadata = fileInfo.Metadata;
+
+            var contentType = "";
+            var fileName = "";
+
+            if (metadata != null)
+            {
+                contentType = metadata.GetElement("ContentType").Value.ToString();
+                fileName = metadata.GetElement("UntrustedFileName").Value.ToString();
+            }
+
+            return Ok(new
+            {
+                Id = fileInfo.Id.ToString(),
+                Filename = fileName,
+                ContentType = contentType,
+                Length = fileInfo.Length
+            });
+        }
 
         [HttpGet]
         [Route(nameof(DownloadFile))]
