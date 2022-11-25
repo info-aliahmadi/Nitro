@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Nitro.Core.Interfaces.Auth;
 using Nitro.Core.Interfaces.Cms;
 using Nitro.Kernel.Interfaces;
 using Nitro.Service.Cms;
@@ -13,6 +14,7 @@ namespace Nitro.Service
             services.AddScoped<IEmailSender, MessageSender.MessageSender>();
             services.AddScoped<ISmsSender, MessageSender.MessageSender>();
             services.AddScoped<IAuthorService, AuthorService>();
+            services.AddScoped<IRoleService, RoleService>();
 
 
         }

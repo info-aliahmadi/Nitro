@@ -30,8 +30,4 @@
     <ProjectReference Include="..\Nitro.Infrastructure.Test\Nitro.Infrastructure.Test.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Auth\" />
-  </ItemGroup>
-
 </Project>

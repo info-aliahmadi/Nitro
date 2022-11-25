@@ -5,7 +5,6 @@ using Nitro.Core.Models.Cms;
 
 namespace Nitro.Web.Controllers.Cms
 {
-    [AllowAnonymous]
     [ApiController]
     [Route("Api/Cms/[controller]")]
     public class AuthorController : ControllerBase
