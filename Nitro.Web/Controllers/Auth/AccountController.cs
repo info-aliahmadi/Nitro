@@ -50,83 +50,99 @@ namespace Nitro.Web.Controllers.Auth
         [AllowAnonymous]
         public async Task<IActionResult> Initialize()
         {
-            var result = new AccountResult();
-            if (ModelState.IsValid)
+            try
             {
-                var user = new User
-                    {DOB = DateTime.Now, Name = "admin", UserName = "admin", Email = "admin@admin.com"};
-                var isExist = _repository.Table<User>().Any(x => x.UserName == "admin");
-                if (!isExist)
+
+                var result = new AccountResult();
+                if (ModelState.IsValid)
                 {
-                    var identityResult = await _userManager.CreateAsync(user, "admin");
-                    if (identityResult.Succeeded)
+                    var user = new User
+                    { DOB = DateTime.Now, Name = "admin", UserName = "admin", Email = "admin@admin.com" };
+                    var isExist = _repository.Table<User>().Any(x => x.UserName == "admin");
+                    if (!isExist)
                     {
-                        if (_userManager.Options.SignIn.RequireConfirmedEmail)
+                        var identityResult = await _userManager.CreateAsync(user, "admin");
+                        if (identityResult.Succeeded)
                         {
-                            result.Status = AccountStatusEnum.RequireConfirmedEmail;
-                            var emailRequest = new EmailRequestRecord();
-                            //For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
-                            //Send an email with this link
-                            var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
-                            var callbackUrl = Url.Action("ConfirmEmail", "Account",
-                                new {userId = user.Id, code = code, returnUrl = ""},
-                                protocol: HttpContext.Request.Scheme);
-
-                            emailRequest.Subject = _sharedlocalizer["ConfirmEmail"];
-                            emailRequest.Body =
-                                string.Format(
-                                    _sharedlocalizer[
-                                        "Please confirm your account by clicking this link: <a href='{0}'>link</a>"],
-                                    callbackUrl);
-                            emailRequest.ToEmail = "admin@admin.com";
-                            try
+                            if (_userManager.Options.SignIn.RequireConfirmedEmail)
                             {
-                                await _emailSender.SendEmailAsync(emailRequest);
+                                result.Status = AccountStatusEnum.RequireConfirmedEmail;
+                                var emailRequest = new EmailRequestRecord();
+                                //For more information on how to enable account confirmation and password reset please visit http://go.microsoft.com/fwlink/?LinkID=532713
+                                //Send an email with this link
+                                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                                var callbackUrl = Url.Action("ConfirmEmail", "Account",
+                                    new { userId = user.Id, code = code, returnUrl = "" },
+                                    protocol: HttpContext.Request.Scheme);
 
-                                result.Status = AccountStatusEnum.Succeeded;
-                                return Ok(result);
+                                emailRequest.Subject = _sharedlocalizer["ConfirmEmail"];
+                                emailRequest.Body =
+                                    string.Format(
+                                        _sharedlocalizer[
+                                            "Please confirm your account by clicking this link: <a href='{0}'>link</a>"],
+                                        callbackUrl);
+                                emailRequest.ToEmail = "admin@admin.com";
+                                try
+                                {
+                                    await _emailSender.SendEmailAsync(emailRequest);
+
+                                    result.Status = AccountStatusEnum.Succeeded;
+                                    return Ok(result);
+                                }
+                                catch (Exception e)
+                                {
+                                    _logger.LogError(e.InnerException + "_" + e.Message);
+                                    result.Errors.Add(string.Format(_sharedlocalizer["{0} action throws an error"]));
+                                    return BadRequest(result);
+                                }
                             }
-                            catch (Exception e)
+                        }
+                        if (identityResult.Errors.Any())
+                        {
+                            foreach (var error in identityResult.Errors)
                             {
-                                _logger.LogError(e.InnerException + "_" + e.Message);
-                                result.Errors.Add(string.Format(_sharedlocalizer["{0} action throws an error"]));
-                                return BadRequest(result);
+                                _logger.LogError(_sharedlocalizer["{0}; Requested By: {1}"], error.Description,
+                                    "admin@admin.com");
+                                result.Errors.Add(error.Description);
                             }
+
+                            _logger.LogError(_sharedlocalizer["The user could not create a new account.; Requested By: {0}"],
+                                "admin@admin.com");
+                            result.Status = AccountStatusEnum.Failed;
+
+                            return BadRequest(result);
+
+                        }
+                        else
+                        {
+                            return Ok(result);
                         }
                     }
 
-                    foreach (var error in identityResult.Errors)
-                    {
-                        _logger.LogError(_sharedlocalizer["{0}; Requested By: {1}"], error.Description,
-                            "admin@admin.com");
-                        result.Errors.Add(error.Description);
-                    }
 
-                    _logger.LogError(_sharedlocalizer["The user could not create a new account.; Requested By: {0}"],
-                        "admin@admin.com");
-                    result.Status = AccountStatusEnum.Failed;
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    _logger.LogInformation(3,
+                        _sharedlocalizer["The user created a new account with the password."]);
+                    result.Status = AccountStatusEnum.Succeeded;
+                    return Ok(result);
 
-                    return BadRequest(result);
                 }
 
+                var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
+                _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: {0}"], "admin@admin.com");
+                result.Status = AccountStatusEnum.Invalid;
+                foreach (var error in errors)
+                {
+                    result.Errors.Add(error);
+                }
 
-                await _signInManager.SignInAsync(user, isPersistent: false);
-                _logger.LogInformation(3,
-                    _sharedlocalizer["The user created a new account with the password."]);
-                result.Status = AccountStatusEnum.Succeeded;
-                return Ok(result);
-
+                return BadRequest(result);
             }
-
-            var errors = ModelState.Values.SelectMany(x => x.Errors).Select(x => x.ErrorMessage);
-            _logger.LogWarning(_sharedlocalizer["Input data are invalid.; Requested By: {0}"], "admin@admin.com");
-            result.Status = AccountStatusEnum.Invalid;
-            foreach (var error in errors)
+            catch (Exception)
             {
-                result.Errors.Add(error);
-            }
 
-            return BadRequest(result);
+                throw;
+            }
         }
 
 

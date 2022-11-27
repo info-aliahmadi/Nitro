@@ -40,6 +40,23 @@ namespace Nitro.Service.Cms
         /// <summary>
         /// 
         /// </summary>
+        /// <returns></returns>
+        public async Task<List<RoleModel>> GetList2()
+        {
+
+
+            return new List<RoleModel>()
+            {
+               new RoleModel()
+               {
+                   Name = ""
+               }
+            };
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
         public async Task<RoleModel> GetById(int id)

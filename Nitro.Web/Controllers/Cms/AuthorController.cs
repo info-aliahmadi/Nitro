@@ -5,6 +5,7 @@ using Nitro.Core.Models.Cms;
 
 namespace Nitro.Web.Controllers.Cms
 {
+    [Authorize]
     [ApiController]
     [Route("Api/Cms/[controller]")]
     public class AuthorController : ControllerBase
@@ -18,7 +19,7 @@ namespace Nitro.Web.Controllers.Cms
             _logger = logger;
             _authorService = authorService;
         }
-
+        [AllowAnonymous]
         [HttpGet( nameof(GetAuthors))]
         public async Task<ActionResult<IEnumerable<AuthorModel>>> GetAuthors()
         {

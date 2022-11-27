@@ -11,6 +11,7 @@ using Nitro.Web.Controllers.Cms;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -21,25 +22,24 @@ namespace Nitro.Web.Test
         readonly HttpClient _client;
         public ApiTests(ApiWebApplicationFactory application)
         {
-            _client = application.CreateClient();
-        }
-        [Fact]
-        public async Task GET_retrieves_weather_forecast()
-        {
-            var response = await _client.GetAsync("/api/Home/GetWeatherForecast");
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
-        }
-        [Fact]
-        public async Task GET_retrieves_TestLocalization()
-        {
-            var response = await _client.GetAsync("/api/Home/TestLocalization");
-            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            _client = application.CreateClient(new WebApplicationFactoryClientOptions
+            {
+                AllowAutoRedirect = false,
+            });
+            _client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue(scheme: "TestScheme");
         }
         [Fact]
         public async Task GET_retrieves_authors()
         {
-            var response = await _client.GetAsync("/api/cms/author/GetAuthors");
+            var response = await _client.GetAsync("/Api/Cms/Author/GetAuthors");
             response.StatusCode.Should().Be(HttpStatusCode.OK);
+        }
+        [Fact]
+        public async Task GET_retrieves_author_by_id_zero()
+        {
+            var response = await _client.GetAsync("/Api/Cms/Author/GetAuthor?authorId=0");
+            response.StatusCode.Should().Be(HttpStatusCode.NotFound);
         }
     }
 }

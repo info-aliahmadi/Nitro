@@ -15,7 +15,7 @@ namespace Nitro.Web.Test.Auth
     {
         readonly Fixture fixture;
         readonly RoleController roleController;
-        public RoleControllerTest(ApiWebApplicationFactory application)
+        public RoleControllerTest()
         {
             //Arrange
             fixture = new Fixture();
@@ -24,7 +24,7 @@ namespace Nitro.Web.Test.Auth
         }
 
         [Fact]
-        public async void Get_retrieves_roles()
+        public async void GET_retrieves_roles()
         {
             //Act
             var resultList = await roleController.GetRoles();
@@ -34,7 +34,7 @@ namespace Nitro.Web.Test.Auth
         }
         [Theory]
         [InlineData(0)]
-        public async void Get_retrieve_role_by_zero(int id)
+        public async void GET_retrieve_role_by_zero(int id)
         {
             //Act
             var resultList = await roleController.GetRole(id);
@@ -44,7 +44,7 @@ namespace Nitro.Web.Test.Auth
         }
         [Theory]
         [InlineData(1)]
-        public async void Get_retrieve_role_by_id(int id)
+        public async void GET_retrieve_role_by_id(int id)
         {
             //Act
             var resultList = await roleController.GetRole(id);

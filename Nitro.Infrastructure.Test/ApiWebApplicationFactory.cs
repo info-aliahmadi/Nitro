@@ -1,5 +1,7 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,11 +27,15 @@ namespace Nitro.Infrastructure.Test
             });
             builder.ConfigureTestServices(services =>
             {
-                services.AddTransient<IQueryRepository, QueryRepository>();
-                services.AddTransient<ICommandRepository, CommandRepository>();
+                //services.AddTransient<IQueryRepository, QueryRepository>();
+                //services.AddTransient<ICommandRepository, CommandRepository>();
                 services.AddTransient<IAuthorService, AuthorService>();
                 services.AddTransient<IRoleService, RoleService>();
+                services.AddAuthentication(defaultScheme: "TestScheme")
+                 .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(
+                     "TestScheme", options => { });
             });
+
         }
     }
 }

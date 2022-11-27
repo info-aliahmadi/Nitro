@@ -1,12 +1,6 @@
-﻿using Microsoft.AspNetCore.Builder;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using EFCoreSecondLevelCacheInterceptor;
 
 namespace Nitro.Infrastructure.Data
@@ -24,7 +18,12 @@ namespace Nitro.Infrastructure.Data
             //Setting it too high may needlessly consume memory as
             //unused DbContext instances are maintained in the pool.
             services.AddDbContext<ApplicationDbContext>((serviceProvider, options) =>
-                options.UseSqlServer(connectionString)
+                options.UseSqlServer(connectionString
+                //,builder =>
+                //{
+                //    builder.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null);
+                //}
+                )
                     .AddInterceptors(serviceProvider.GetRequiredService<SecondLevelCacheInterceptor>())
             ); // the default pool size in 1024 
 

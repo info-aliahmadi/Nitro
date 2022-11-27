@@ -25,7 +25,7 @@ namespace Nitro.Web.Test.Cms
     {
         readonly Fixture fixture;
         readonly AuthorController authorController;
-        public AuthorControllerTests(ApiWebApplicationFactory application)
+        public AuthorControllerTests()
         {
             //Arrange
             fixture = new Fixture();
@@ -34,7 +34,7 @@ namespace Nitro.Web.Test.Cms
         }
 
         [Fact]
-        public async void Get_retrieves_authors()
+        public async void GET_retrieves_authors()
         {
             // Fixture setup
             //var fixture = new Fixture();
@@ -64,7 +64,7 @@ namespace Nitro.Web.Test.Cms
         }
         [Theory]
         [InlineData(0)]
-        public async void Get_retrieve_author_by_zero(int id)
+        public async void GET_retrieve_author_by_zero(int id)
         {
 
             //Act
@@ -75,7 +75,7 @@ namespace Nitro.Web.Test.Cms
         }
         [Theory]
         [InlineData(1)]
-        public async void Get_retrieve_author_by_id(int id)
+        public async void GET_retrieve_author_by_id(int id)
         {
 
             //Act
