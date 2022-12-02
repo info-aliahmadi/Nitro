@@ -16,7 +16,7 @@ namespace Nitro.Kernel.Interfaces.Data
         /// </summary>
         /// <typeparam name="TEntity">The type of the entity.</typeparam>
         /// <returns>Returns <see cref="IQueryable{T}"/>.</returns>
-        DbSet<T> Table<T>() where T : class;
+        IQueryable<T> Table<T>() where T : class;
 
         /// <summary>
         /// This method returns <see cref="List{T}"/> without any filter. Call only when you want to pull all the data from the source.

@@ -27,7 +27,7 @@ namespace Nitro.Infrastructure.Data
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <returns></returns>
-        public DbSet<T> Table<T>() where T : class => _dbContext.Set<T>();
+        public IQueryable<T> Table<T>() where T : class => _dbContext.Set<T>();
 
         /// <summary>
         /// 
