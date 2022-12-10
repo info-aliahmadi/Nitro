@@ -48,14 +48,14 @@ namespace Nitro.Service.Cms
         {
             var record = await _queryRepository.Table<Role>().Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
-
-            var role = new RoleModel()
+            var role = new RoleModel();
+            if (record !=null)
             {
-                Id = record!.Id,
-                Name = record.Name,
-                ConcurrencyStamp = record.ConcurrencyStamp,
-                NormalizedName = record.NormalizedName
-            };
+                role.Id = record!.Id;
+                role.Name = record.Name;
+                role.ConcurrencyStamp = record.ConcurrencyStamp;
+                role.NormalizedName = record.NormalizedName;
+            }
 
             return role;
         }

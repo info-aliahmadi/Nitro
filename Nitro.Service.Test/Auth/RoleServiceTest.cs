@@ -25,17 +25,24 @@ namespace Nitro.Service.Test.Auth
         public RoleServiceTest()
         {
             //Arrange
-            //fixture = new Fixture().Customize(new AutoMoqCustomization());
+            fixture = new Fixture().Customize(new AutoMoqCustomization());
 
-            fixture = new Fixture().Customize(new InMemoryCustomization());
-            var context = fixture.Create<ApplicationDbContext>();
+            //fixture = new Fixture().Customize(new InMemoryCustomization());
+            //var context = fixture.Create<ApplicationDbContext>();
+
+            fixture.Freeze<Mock<ApplicationDbContext>>();
 
             var queryRepository = fixture.Freeze<Mock<IQueryRepository>>();
             var commandRepository = fixture.Freeze<Mock<ICommandRepository>>();
 
-            var rolesList = fixture.CreateMany<Role>().AsAsyncQueryable();
+            
 
-            queryRepository.Setup(r => r.Table<Role>()).Returns(rolesList);
+
+            var rolesList = CreateDbSetMock(fixture.CreateMany<Role>().AsQueryable());
+
+            queryRepository.Setup(r => r.Table<Role>()).Returns(rolesList.Object);
+
+
 
             roleService = new RoleService(queryRepository.Object, commandRepository.Object);
 
@@ -62,7 +69,25 @@ namespace Nitro.Service.Test.Auth
             resultList.Should().BeOfType<RoleModel>();
         }
 
+        private static Mock<DbSet<T>> CreateDbSetMock<T>(IQueryable<T> items) where T : class
+        {
+            var dbSetMock = new Mock<DbSet<T>>();
 
+            dbSetMock.As<IAsyncEnumerable<T>>()
+                .Setup(x => x.GetAsyncEnumerator(default))
+                .Returns(new TestAsyncEnumerator<T>(items.GetEnumerator()));
+            dbSetMock.As<IQueryable<T>>()
+                .Setup(m => m.Provider)
+                .Returns(new TestAsyncQueryProvider<T>(items.Provider));
+            dbSetMock.As<IQueryable<T>>()
+                .Setup(m => m.Expression).Returns(items.Expression);
+            dbSetMock.As<IQueryable<T>>()
+                .Setup(m => m.ElementType).Returns(items.ElementType);
+            dbSetMock.As<IQueryable<T>>()
+                .Setup(m => m.GetEnumerator()).Returns(items.GetEnumerator());
+
+            return dbSetMock;
+        }
     }
 
 }
