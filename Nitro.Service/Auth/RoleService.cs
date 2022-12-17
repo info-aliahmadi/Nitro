@@ -26,45 +26,17 @@ namespace Nitro.Service.Cms
         /// <returns></returns>
         public async Task<List<RoleModel>> GetList()
         {
-            var result =  _queryRepository.Table<Role>().Select(x => new RoleModel()
+            var list = await _queryRepository.Table<Role>().ToListAsync();
+            
+           var result = list.Select(x => new RoleModel()
             {
                 Id = x.Id,
                 Name = x.Name,
                 ConcurrencyStamp = x.ConcurrencyStamp,
                 NormalizedName = x.NormalizedName
-            });
-                
-             var sss= await result.ToListAsync();
+            }).ToList();
 
-            return sss;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<Role>> GetList3()
-        {
-            var result = _queryRepository.Table<Role>();
-
-            var sss = await result.ToListAsync();
-
-            return sss;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        public async Task<List<RoleModel>> GetList2()
-        {
-
-
-            return new List<RoleModel>()
-            {
-               new RoleModel()
-               {
-                   Name = ""
-               }
-            };
+            return result;
         }
 
         /// <summary>
@@ -76,14 +48,14 @@ namespace Nitro.Service.Cms
         {
             var record = await _queryRepository.Table<Role>().Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
-
-            var role = new RoleModel()
+            var role = new RoleModel();
+            if (record !=null)
             {
-                Id = record!.Id,
-                Name = record.Name,
-                ConcurrencyStamp = record.ConcurrencyStamp,
-                NormalizedName = record.NormalizedName
-            };
+                role.Id = record!.Id;
+                role.Name = record.Name;
+                role.ConcurrencyStamp = record.ConcurrencyStamp;
+                role.NormalizedName = record.NormalizedName;
+            }
 
             return role;
         }

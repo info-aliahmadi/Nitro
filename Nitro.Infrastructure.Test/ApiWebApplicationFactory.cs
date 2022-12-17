@@ -1,3 +1,4 @@
+using EFCoreSecondLevelCacheInterceptor;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -7,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Nitro.Core.Interfaces.Auth;
 using Nitro.Core.Interfaces.Cms;
+using Nitro.Infrastructure.Cache;
 using Nitro.Infrastructure.Data;
 using Nitro.Kernel.Interfaces.Data;
 using Nitro.Service.Cms;
@@ -27,8 +29,8 @@ namespace Nitro.Infrastructure.Test
             });
             builder.ConfigureTestServices(services =>
             {
-                //services.AddTransient<IQueryRepository, QueryRepository>();
-                //services.AddTransient<ICommandRepository, CommandRepository>();
+                services.AddTransient<IQueryRepository, QueryRepository>();
+                services.AddTransient<ICommandRepository, CommandRepository>();
                 services.AddTransient<IAuthorService, AuthorService>();
                 services.AddTransient<IRoleService, RoleService>();
                 services.AddAuthentication(defaultScheme: "TestScheme")
