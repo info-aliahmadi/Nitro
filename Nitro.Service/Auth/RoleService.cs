@@ -26,17 +26,30 @@ namespace Nitro.Service.Cms
         /// <returns></returns>
         public async Task<List<RoleModel>> GetList()
         {
-            var result = await _queryRepository.Table<Role>().Select(x => new RoleModel()
+            var result =  _queryRepository.Table<Role>().Select(x => new RoleModel()
             {
                 Id = x.Id,
                 Name = x.Name,
                 ConcurrencyStamp = x.ConcurrencyStamp,
                 NormalizedName = x.NormalizedName
-            }).ToListAsync();
+            });
+                
+             var sss= await result.ToListAsync();
 
-            return result;
+            return sss;
         }
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public async Task<List<Role>> GetList3()
+        {
+            var result = _queryRepository.Table<Role>();
 
+            var sss = await result.ToListAsync();
+
+            return sss;
+        }
         /// <summary>
         /// 
         /// </summary>
