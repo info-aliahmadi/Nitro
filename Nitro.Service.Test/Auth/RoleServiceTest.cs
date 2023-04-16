@@ -2,6 +2,7 @@
 using AutoFixture.AutoMoq;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.DynamicLinq;
 using Moq;
 using Nitro.Core.Domain.Auth;
 using Nitro.Core.Interfaces.Auth;
@@ -22,45 +23,24 @@ namespace Nitro.Service.Test.Auth
     {
         private readonly IFixture fixture;
         private readonly RoleService roleService;
+        private IEnumerable<Role> roleItems;
+
         public RoleServiceTest()
         {
             //Arrange
             fixture = new Fixture().Customize(new AutoMoqCustomization());
-
             fixture.Freeze<Mock<ApplicationDbContext>>();
 
             var queryRepository = fixture.Freeze<Mock<IQueryRepository>>();
             var commandRepository = fixture.Freeze<Mock<ICommandRepository>>();
 
-            var items = fixture.CreateMany<Role>();
+            roleItems = fixture.CreateMany<Role>();
 
+            var roleDbSet = DbSetMockExtension.CreateDbSetMock<Role>(roleItems.AsQueryable());
 
-                         queryRepository.As<IAsyncEnumerable<Role>>()
-                .Setup(x => x.GetAsyncEnumerator(default))
-                .Returns(new AsyncEnumerator<Role>(items.GetEnumerator()));
-
-            queryRepository.As<IQueryable<Role>>()
-                .Setup(m => m.Provider)
-                .Returns(new AsyncQueryProvider<T>(items.Provider));
-
-            queryRepository.As<IQueryable<T>>()
-                .Setup(m => m.Expression).Returns(items.Expression);
-
-            queryRepository.As<IQueryable<T>>()
-                .Setup(m => m.ElementType).Returns(items.ElementType);
-
-            queryRepository.As<IQueryable<T>>()
-                .Setup(m => m.GetEnumerator()).Returns(items.GetEnumerator());
-
-            queryRepository.Setup(x => x.Table<Role>())
-         .Returns(fixture.CreateMany<Role>().AsQueryable());
-
-            //var rolesList = DbSetMockExtension.CreateDbSetMock(fixture.CreateMany<Role>().AsQueryable());
-
-            //queryRepository.Setup(r => r.Table<Role>()).Returns(rolesList.Object);
+            queryRepository.Setup(x => x.Table<Role>()).Returns(roleDbSet.Object);
 
             roleService = new RoleService(queryRepository.Object, commandRepository.Object);
-
         }
 
         [Fact]
@@ -101,6 +81,23 @@ namespace Nitro.Service.Test.Auth
         {
             //Arrange
             var roleModel = fixture.Create<RoleModel>();
+            roleModel.Id = roleItems.First().Id;
+
+            //Act
+            var resultRoleModel = await roleService.Update(roleModel);
+
+            //Assert
+            resultRoleModel.Should().BeEquivalentTo(roleModel);
+        }
+
+        [Fact]
+        public async void Delete_DeleteRoleFields_ReturnsRoleModel()
+        {
+            //
+            //
+            var roleModel = fixture.Create<RoleModel>();
+            roleModel.Id = roleItems.First().Id;
+
             //Act
             var resultRoleModel = await roleService.Update(roleModel);
 

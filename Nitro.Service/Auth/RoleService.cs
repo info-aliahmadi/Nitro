@@ -88,9 +88,9 @@ namespace Nitro.Service.Cms
         public async Task<RoleModel> Update(RoleModel roleModel)
         {
             var role = await _queryRepository.Table<Role>().FirstOrDefaultAsync(x => x.Id == roleModel.Id);
-            if (role == null)
+            if (role is null)
             {
-                throw new Exception("");
+                throw new Exception("Not Found");
             }
 
             role.Name = roleModel.Name;

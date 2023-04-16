@@ -28,12 +28,12 @@ namespace Nitro.Infrastructure.Test
 
         public object Execute(Expression expression)
         {
-            return this.innerQueryProvider.Execute(expression);
+            return innerQueryProvider.Execute(expression);
         }
 
         public TResult Execute<TResult>(Expression expression)
         {
-            return this.innerQueryProvider.Execute<TResult>(expression);
+            return innerQueryProvider.Execute<TResult>(expression);
         }
 
         public TResult ExecuteAsync<TResult>(Expression expression, CancellationToken cancellationToken = new CancellationToken())
@@ -72,16 +72,16 @@ namespace Nitro.Infrastructure.Test
             this.enumerator = enumerator;
         }
 
-        public T Current => this.enumerator.Current;
+        public T Current => enumerator.Current;
 
         public ValueTask DisposeAsync()
         {
-            return new ValueTask(Task.Run(() => this.enumerator.Dispose()));
+            return new ValueTask(Task.Run(() => enumerator.Dispose()));
         }
 
         public ValueTask<bool> MoveNextAsync()
         {
-            return new ValueTask<bool>(this.enumerator.MoveNext());
+            return new ValueTask<bool>(enumerator.MoveNext());
         }
     }
 }
