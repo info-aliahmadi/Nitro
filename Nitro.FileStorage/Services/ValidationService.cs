@@ -1,6 +1,4 @@
-﻿using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
-using Nitro.FileStorage.Infrastructure.Settings;
+﻿using Nitro.FileStorage.Infrastructure.Settings;
 using Nitro.FileStorage.Infrastructure.SignatureVerify;
 
 namespace Nitro.FileStorage.Services

@@ -1,11 +1,9 @@
 ﻿using System.Security.Cryptography;
-using Microsoft.Extensions.Options;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Misc;
 using MongoDB.Driver.GridFS;
 using Nitro.FileStorage.Infrastructure.Settings;
-using Nitro.FileStorage.Infrastructure.SignatureVerify;
 using Nitro.FileStorage.Models;
 
 namespace Nitro.FileStorage.Services
