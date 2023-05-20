@@ -1,14 +1,6 @@
-using AutoFixture;
-using AutoFixture.Xunit2;
 using FluentAssertions;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using Moq;
-using Nitro.Core.Interfaces.Cms;
-using Nitro.Core.Models.Cms;
 using Nitro.Infrastructure.Test;
-using Nitro.Web.Controllers.Cms;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;

@@ -3,7 +3,6 @@ using Microsoft.Extensions.Configuration;
 using Serilog;
 using Serilog.Exceptions;
 using Serilog.Sinks.Elasticsearch;
-using System;
 using System.Reflection;
 
 namespace Nitro.Infrastructure.Logs
@@ -13,14 +12,13 @@ namespace Nitro.Infrastructure.Logs
         public static void AddSerilogConfig(this WebApplicationBuilder builder)
         {
             builder.Host.ConfigureAppConfiguration((context, config) =>
-
             {
                 config.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
                 config.AddJsonFile(
                     $"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")}.json",
                     optional: true);
             }).UseSerilog();
-
+             
         }
         public static void ConfigureLogging()
         {
